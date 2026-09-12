@@ -1,0 +1,24 @@
+{
+  "summary": "Retested Admin.jsx EntryModal focus-loss fix on /admin. EField is now module-scope; typing works normally. Verified typing full multi-character strings into entry-field-model_family ('Speedmaster Mark II'), entry-field-reference_numbers ('145.022, ST 145.022'), and entry-field-movement_caliber ('Cal. 861') — full strings landed and document.activeElement stayed on the respective input after every keystroke. Full CRUD round-trip via modal succeeded: create (brand=Omega, unique model) → row appears in reference-table; edit (rename model) → change persists in table; delete → row removed. Backend not retested per instructions.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_2.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Fix is correct: EField hoisted to module scope in Admin.jsx and called as <EField form={form} set={set} .../> — no more remount-per-keystroke.",
+    "Consider using useCallback for the `set` function in EntryModal for micro-optimization (non-blocking).",
+    "Prior review comments from iteration_1 still stand (deprecated FastAPI on_event, public /api/files/{id}) — not regressions."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not retested (100% in iteration_1)", "frontend": "100% (6/6 admin modal flows)"},
+  "test_credentials": "Admin: session_token=admin_session_1789225348688 (test_database, is_admin=true).",
+  "seed_data_creation": "Provisioned 1 admin user + 7-day session in test_database. Created + deleted 1 TEST_Speedy reference entry during CRUD test (cleaned up).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Admin modal focus-loss bug from iteration_1 is fully resolved. EField is module-scope. All create/edit/delete flows via modal work end-to-end against /api/reference-entries.",
+  "rca of the issue": "Resolved. Root cause was inner-component-declaration causing React to remount inputs each render. Fix hoists EField to module scope so its identity is stable across parent renders, allowing React to keep the DOM input mounted and focused across state updates."
+}

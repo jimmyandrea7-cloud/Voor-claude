@@ -1,0 +1,41 @@
+{
+  "summary": "Ran 21 pytest backend tests (100% pass) covering brands, reference-entries CRUD + admin gating, auth (with/without Bearer), settings admin gating, scan lifecycle including inactive-brand 400, uploads + file serve, photo/description persistence, AI analyze (real Unsplash watch JPEG) with free-tier gating (locked=true; value/story/authenticity/breakdown/references absent), Stripe checkout + status. Ran Playwright frontend suite covering landing, protected redirects, login, dashboard, brand select (Omega active, Rolex/Patek/AP disabled), scan wizard (7 slots, 4 required, continue disabled until met), admin gating (non-admin redirected, admin sees seeded rows), Add-Entry modal. Frontend has one CRITICAL UX bug: modal inputs lose focus after 1 keystroke.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Admin.jsx > EntryModal",
+        "issue": "The `F` helper component is defined INSIDE EntryModal, so React re-creates its component identity on every render. Typing any character causes the input to unmount/remount and lose focus. Result: user can only type 1 character at a time in model_family, reference_numbers, serial_range_start/end, production_period, case_material, movement_caliber, dial_variants, source_notes. Verified: after typing 'TEST_focus' the input value is only 'T' and document.activeElement becomes body.",
+        "selector": "[data-testid=\"entry-field-model_family\"] and all other entry-field-* fields rendered via <F />",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix Admin.jsx EntryModal: move the `F` component out of EntryModal (define it at module scope, or replace with inline <input> markup like the notable_history textarea). This is required for admins to add/edit reference entries at all."
+  ],
+  "critical_code_review_comments": [
+    "Admin.jsx: `F` component defined inside EntryModal — causes remounting/focus-loss on every keystroke. Move to module scope.",
+    "backend/server.py uses deprecated FastAPI `@app.on_event('startup'|'shutdown')`; consider lifespan handlers (non-blocking, works).",
+    "STORAGE_BASE default 'https://integrations.emergentagent.com' is hardcoded fallback; acceptable but INTEGRATION_PROXY_URL env is not set — noted.",
+    "/api/files/{file_id} is publicly readable (no auth). Fine for MVP thumbnails but note: any user knowing a file_id can retrieve another user's photo.",
+    "free_result_view leaks confidence_percentage which is fine but ensure paid=false path also strips scan.result on GET (already does via free_result_view — verified).",
+    "get_scan uses model_copy() then reassigns scan.result — Pydantic v2 model_copy shallow copy is fine, works."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (21/21)", "frontend": "92% (12/13 flows; 1 critical bug: modal input focus loss)"},
+  "test_credentials": "User: USER_TOKEN=test_session_1789224987582 / USER_ID=user_test_1789224987582; Admin: ADMIN_TOKEN=admin_session_1789224987582 / ADMIN_ID=user_admin_1789224987582 (both provisioned in test_database). Tests auto-provision fresh tokens if env vars absent.",
+  "seed_data_creation": "Created 1 non-admin user and 1 admin user with 7-day sessions directly in Mongo. Created 1 TEST_ reference-entry (deleted by test). Created 1 scan (Omega) with uploaded /tmp/watch.jpg used for analyze. One payment_transactions record inserted via Stripe test-mode checkout.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend fully green. Only remaining fix: Admin.jsx modal focus-loss (move `F` out of EntryModal). After fix, re-run Playwright typing test on [data-testid=entry-field-model_family] — activeElement should stay on that field after 5+ keystrokes and full string should land in input value. Fresh tokens can be provisioned via _provision_tokens() in backend_test.py.",
+  "rca of the issue": "Admin.jsx line ~170: `const F = ({...}) => (...)` is declared inside EntryModal's function body. Every parent state change (setForm on keystroke) re-runs EntryModal, producing a NEW `F` function reference each render. React's diffing sees a different component type and unmounts the previous input, remounting a fresh one — which cannot inherit the previous focus. Fix: move `F` (and Field-style helpers) to module scope, or inline the input JSX directly. Reproduction: /admin (admin cookie) → Add Entry → click Model family → type 'ABC' → only 'A' is recorded and focus jumps to <body>."
+}

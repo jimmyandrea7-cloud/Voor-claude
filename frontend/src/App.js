@@ -1,0 +1,48 @@
+import "./App.css";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AuthCallback from "./pages/AuthCallback";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import BrandSelect from "./pages/BrandSelect";
+import ScanWizard from "./pages/ScanWizard";
+import ScanResult from "./pages/ScanResult";
+import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
+import { PaymentSuccess, PaymentCancel } from "./pages/Payment";
+
+function AppRouter() {
+  const location = useLocation();
+  if (location.hash?.includes("session_id=")) return <AuthCallback />;
+
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/scan" element={<ProtectedRoute><BrandSelect /></ProtectedRoute>} />
+      <Route path="/scan/:scanId" element={<ProtectedRoute><ScanWizard /></ProtectedRoute>} />
+      <Route path="/report/:scanId" element={<ProtectedRoute><ScanResult /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
+      <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+      <Route path="/payment/cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <div className="App">
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRouter />
+          <Toaster position="top-center" theme="dark" richColors />
+        </AuthProvider>
+      </BrowserRouter>
+    </div>
+  );
+}
+
+export default App;

@@ -1,0 +1,124 @@
+{
+  "project_name": "RefCheck",
+  "app_type": "hybrid_fullstack",
+  "archetype": "LUXURY_SWISS_AUTHORITY",
+  "visual_theme": {
+    "mode": "dark",
+    "background": "bg-[#090D16]",
+    "surface_primary": "bg-[#0F172A]",
+    "surface_secondary": "bg-[#1E293B]",
+    "surface_card": "bg-[#111827]/90 backdrop-blur-md border border-[#1E293B]",
+    "primary_accent": "#D4AF37",
+    "primary_accent_hover": "#E5C158",
+    "primary_accent_gold_gradient": "bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C5A059]",
+    "secondary_steel_blue": "#38BDF8",
+    "secondary_steel_blue_hover": "#0284C7",
+    "text_primary": "#F8FAFC",
+    "text_secondary": "#94A3B8",
+    "text_muted": "#64748B",
+    "border_subtle": "border-[#1E293B]",
+    "border_gold_glow": "border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.15)]",
+    "badge_omega": "bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30",
+    "badge_coming_soon": "bg-slate-800/80 text-slate-400 border border-slate-700"
+  },
+  "typography": {
+    "heading_font_family": "'Cormorant Garamond', 'Cinzel', serif",
+    "body_font_family": "'Plus Jakarta Sans', 'Inter', sans-serif",
+    "mono_font_family": "'JetBrains Mono', monospace",
+    "scale": {
+      "h1_hero": "text-3xl sm:text-4xl lg:text-5xl font-serif tracking-tight text-slate-100",
+      "h2_section": "text-2xl sm:text-3xl font-serif text-slate-100 tracking-tight",
+      "h3_card": "text-lg sm:text-xl font-medium text-slate-200",
+      "subtitle": "text-base sm:text-lg text-slate-400 font-sans leading-relaxed",
+      "body": "text-sm sm:text-base text-slate-300 font-sans leading-normal",
+      "caption_mono": "text-xs font-mono text-amber-300/80 tracking-wider uppercase"
+    }
+  },
+  "image_urls": {
+    "hero_vintage_watch": "https://images.unsplash.com/photo-1556453007-ee036169934b?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "watch_dial_close_up": "https://images.unsplash.com/photo-1677445166019-4fa91a090e49?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "watch_movement_gold": "https://images.unsplash.com/photo-1605544906466-6d3268a268bd?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "wrist_vintage_omega": "https://images.unsplash.com/photo-1769240186303-d7fb5cf4a8be?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "key_components_structure": {
+    "navigation_header": {
+      "style": "fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#090D16]/85 border-b border-[#1E293B]",
+      "elements": [
+        "Brand Logo 'RefCheck' with Horology Compass Icon",
+        "Nav links: Scan Watch, My Collection, Reference DB (Admin), How it Works",
+        "Primary CTA: 'Start New Identification' (Gold Accent Button)"
+      ]
+    },
+    "brand_selector": {
+      "description": "Grid of watch maison cards with Omega active and others disabled/coming soon",
+      "brands": [
+        { "name": "Omega", "status": "ACTIVE", "badge": "Fully Supported", "logo_text": "Ω OMEGA", "desc": "Speedmaster, Seamaster, Constellation, De Ville, Geneve" },
+        { "name": "Rolex", "status": "COMING_SOON", "badge": "Q3 2026", "logo_text": "ROLEX" },
+        { "name": "Patek Philippe", "status": "COMING_SOON", "badge": "Q4 2026", "logo_text": "PATEK PHILIPPE" },
+        { "name": "Audemars Piguet", "status": "COMING_SOON", "badge": "Q4 2026", "logo_text": "AUDEMARS PIGUET" }
+      ]
+    },
+    "photo_upload_wizard": {
+      "steps": [
+        { "id": "dial", "label": "Full Dial / Face", "required": true, "reason": "Evaluates logo font, hand style, sub-dials, hour markers, and patina consistency." },
+        { "id": "caseback", "label": "Case Back", "required": true, "reason": "Checks for Hippocampus/Seamaster medallion, case numbers, or water-resistance hallmarks." },
+        { "id": "serial", "label": "Serial / Ref Stamp", "required": true, "reason": "Pinpoints exact production year batch and reference code located on inner caseback or lug." },
+        { "id": "lug_profile", "label": "Lug & Case Profile", "required": true, "reason": "Assesses polish history, sharp lyre lug bevels, and case thickness." },
+        { "id": "crown", "label": "Crown Close-up", "required": false, "reason": "Confirms original Ω stamped crown vs. aftermarket replacement." },
+        { "id": "movement", "label": "Caliber / Movement (Optional)", "required": false, "reason": "Extracts caliber number (e.g., Cal. 321, 861, 565) and jewel count." },
+        { "id": "strap", "label": "Bracelet / Clasp", "required": false, "reason": "Verifies end-link numbers (e.g. 516) and period-correct folding clasp." }
+      ]
+    },
+    "questionnaire": {
+      "fields": ["provenance", "engravings", "overall_condition", "box_and_papers", "caseback_numbers"]
+    },
+    "free_preliminary_result": {
+      "features": [
+        "High-level match: Model Family (e.g., Omega Speedmaster Professional 'Moonwatch')",
+        "Headline Confidence Score Badge (e.g., 94.2% Match)",
+        "Key Visual Highlights found",
+        "Teaser paywall card with locked sections blurred"
+      ]
+    },
+    "paywall_card": {
+      "style": "bg-gradient-to-br from-[#1E293B] via-[#0F172A] to-[#111827] border border-[#D4AF37]/40 rounded-xl p-8 shadow-2xl relative overflow-hidden",
+      "cta": "Unlock Full Horologist Appraisal ($9.99 / Single Scan)",
+      "unlocked_perks": [
+        "Exact Reference Number & Caliber Match",
+        "Estimated Production Era (e.g., 1967 - 1969)",
+        "Authenticity Signal Rating (Dial, Hands, Case, Crown, Movement)",
+        "Market Valuation Range (Low - Median - High USD)",
+        "Detailed Condition & Originality Report",
+        "Collector's Historical Story & Provenance Significance"
+      ]
+    },
+    "full_report": {
+      "sections": [
+        "Header Badge & Reference Identification",
+        "Interactive Confidence Score Radar / Breakdown",
+        "Market Valuation Range Slider / Metric Cards",
+        "Authenticity Signal Indicators (Passed / Attention / Flagged)",
+        "Historical Narrative & Heritage Context",
+        "Condition Assessment Notes & Care Instructions",
+        "Legal Appraisal Disclaimer Footer"
+      ]
+    },
+    "user_dashboard": {
+      "features": ["Grid view of past saved scans", "Filter by confidence, model family, date", "Export PDF report capability", "Comparison drawer"]
+    },
+    "admin_management": {
+      "features": ["CRUD ReferenceEntries (Reference ID, Model Name, Era, Calibers, Dial variations, Value Ranges)", "Search and filter reference database", "Batch import reference data"]
+    }
+  },
+  "testing_and_accessibility": {
+    "data_testid_convention": "All interactive elements, buttons, inputs, tabs, and key metrics MUST have explicit data-testid attributes in kebab-case (e.g., data-testid='upload-photo-dial', data-testid='unlock-report-button').",
+    "contrast_rules": "Ensure all text meets minimum 4.5:1 contrast ratio against navy dark surfaces. Use text-slate-100 for primary text and amber-300 for gold badges."
+  },
+  "instructions_to_main_agent": [
+    "Ensure all user flows are smooth, mobile-responsive, and rich in horological details.",
+    "Use standard Lucide React or Radix icons for UI controls and watch specs.",
+    "Always render the legal disclaimer banner at the bottom of all generated identification reports.",
+    "Support mock scanning AI analysis with simulated loading stages (Uploading photos -> Extracting optical features -> Cross-referencing Omega Reference Database -> Calculating confidence score).",
+    "Persist user scans and admin reference database entries using localStorage or backend APIs seamlessly."
+  ]
+}

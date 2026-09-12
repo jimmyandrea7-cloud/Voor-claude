@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rc-bg: #090D16;
+  --rc-surface: #0F172A;
+  --rc-surface-2: #1E293B;
+  --rc-card: #111827;
+  --rc-gold: #D4AF37;
+  --rc-gold-hi: #E5C158;
+  --rc-steel: #38BDF8;
+}
+
+body {
+  margin: 0;
+  background-color: var(--rc-bg);
+  color: #F8FAFC;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif { font-family: 'Cormorant Garamond', 'Cinzel', serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+::selection { background: rgba(212,175,55,0.3); color: #fff; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0F172A; }
+::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+.rc-gold-text {
+  background: linear-gradient(100deg, #C5A059 0%, #F3E5AB 45%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rc-gold-btn {
+  background: linear-gradient(100deg, #C5A059 0%, #E5C158 50%, #D4AF37 100%);
+  color: #0B0F17;
+  transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.rc-gold-btn:hover { filter: brightness(1.07); box-shadow: 0 8px 30px rgba(212,175,55,0.35); transform: translateY(-1px); }
+.rc-gold-btn:active { transform: translateY(0); }
+
+.rc-card {
+  background: rgba(17,24,39,0.9);
+  backdrop-filter: blur(14px);
+  border: 1px solid #1E293B;
+}
+
+.rc-grain::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes rc-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.rc-fade-up { animation: rc-fade-up .6s cubic-bezier(.2,.7,.2,1) both; }
+
+@keyframes rc-spin-slow { to { transform: rotate(360deg); } }
+.rc-spin-slow { animation: rc-spin-slow 2.2s linear infinite; }
+
+@layer base {
+  * { border-color: #1E293B; }
+}
