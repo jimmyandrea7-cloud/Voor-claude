@@ -11,6 +11,8 @@ import ScanResult from "./pages/ScanResult";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import { PaymentSuccess, PaymentCancel } from "./pages/Payment";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 function AppRouter() {
   return (
@@ -24,6 +26,8 @@ function AppRouter() {
       <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
       <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
       <Route path="/payment/cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
     </Routes>
   );
 }

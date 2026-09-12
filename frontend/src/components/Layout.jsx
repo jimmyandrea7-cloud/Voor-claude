@@ -92,7 +92,14 @@ export default function Layout({ children }) {
       <footer className="border-t border-[#E4E1DA] bg-[#F2F1EE] relative z-10">
         <div className="max-w-6xl mx-auto px-6 py-10 space-y-5">
           <Disclaimer compact />
-          <p className="text-xs text-[#A79E92] text-center tracking-wide">© 2026 RefCheck — Horological identification, documented.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-[#A79E92] tracking-wide">
+            <p>© 2026 RefCheck — Horological identification, documented.</p>
+            <span className="hidden sm:inline">·</span>
+            <div className="flex items-center gap-4">
+              <Link to="/privacy" className="hover:text-[#2A2420] transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-[#2A2420] transition-colors">Terms & Conditions</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

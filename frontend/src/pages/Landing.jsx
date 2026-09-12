@@ -94,6 +94,17 @@ export default function Landing() {
         </div>
         <div className="mt-14 max-w-2xl"><Disclaimer /></div>
       </section>
+
+      <footer className="border-t border-[#E4E1DA] bg-[#F2F1EE] relative z-10">
+        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-[#A79E92] tracking-wide">
+          <p>© 2026 RefCheck — Horological identification, documented.</p>
+          <span className="hidden sm:inline">·</span>
+          <div className="flex items-center gap-4">
+            <Link to="/privacy" className="hover:text-[#2A2420] transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-[#2A2420] transition-colors">Terms & Conditions</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
