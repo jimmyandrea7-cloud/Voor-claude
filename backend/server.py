@@ -695,7 +695,7 @@ async def seed_data():
             await db.brands.insert_one(Brand(name=name, tagline=tag, active=False, coming_soon_label=label).model_dump())
 
     omega_doc = await db.brands.find_one({"name": "Omega"}, {"_id": 0})
-    if omega_doc and await db.reference_entries.count_documents({"brand_id": omega_doc["id"]}) == 0:
+    if omega_doc:
         oid = omega_doc["id"]
         seeds = [
             dict(model_family="Speedmaster Professional 'Moonwatch'", reference_numbers=["105.012", "145.012", "ST 145.022"],
@@ -728,9 +728,41 @@ async def seed_data():
                  dial_variants="Entry-level everyday dials, varied",
                  notable_history="Omega's more affordable everyday line; huge production variety.",
                  source_notes="Seed data — broad."),
+            dict(model_family="30T2 Sub-Seconds Dress (pre-Seamaster)", reference_numbers=["CK2364", "CK2384"],
+                 serial_range_start="9500000", serial_range_end="12500000", production_period="1939-1949",
+                 case_material="Steel / gold-plated / solid gold", movement_caliber="Cal. 30T2 / 30T2SC",
+                 dial_variants="Small subsidiary seconds at 6, applied Arabic or dagger indices; two-tone 'sector' dials on early examples",
+                 notable_history="The 30mm 30T2 movement family defined Omega's precise manual-wind dress watches of the 1940s and underpinned many of the brand's chronometer and military pieces of the era.",
+                 source_notes="seed data, verify against Omega extract"),
+            dict(model_family="Chronometre 30T2 RG (chronometer-grade)", reference_numbers=["CK2364", "OT2364"],
+                 serial_range_start="9000000", serial_range_end="12000000", production_period="1940-1950",
+                 case_material="Solid gold / steel", movement_caliber="Cal. 30T2 RG (Réglage de précision)",
+                 dial_variants="Sub-seconds at 6, 'Chronomètre' script on dial, precision-regulated",
+                 notable_history="Chronometer-grade regulation of the 30T2; examples were entered in the Kew-Teddington and Geneva observatory precision trials, earning Omega a strong pre-1950 accuracy reputation.",
+                 source_notes="seed data, verify against Omega extract"),
+            dict(model_family="WWW 'Dirty Dozen' (CK2444)", reference_numbers=["CK2444"],
+                 serial_range_start="10000000", serial_range_end="11000000", production_period="1944-1945",
+                 case_material="Stainless steel", movement_caliber="Cal. 30T2 SC PC",
+                 dial_variants="Black dial, white Arabic numerals, railroad minute track, subsidiary seconds at 6; caseback engraved W.W.W. and broad-arrow military marks",
+                 notable_history="Omega's contribution to the British Ministry of Defence 'Watch, Wrist, Waterproof' specification — one of the twelve makers collectors call the 'Dirty Dozen', of which Omega supplied the largest share.",
+                 source_notes="seed data, verify against Omega extract"),
+            dict(model_family="CK2292 R.A.F. Pilot (WWII)", reference_numbers=["CK2292"],
+                 serial_range_start="9500000", serial_range_end="10500000", production_period="1940-1945",
+                 case_material="Chromed brass / stainless steel", movement_caliber="Cal. 30T2 SC",
+                 dial_variants="Large legible Arabic numerals, white or black dial, subsidiary seconds at 6; military-issued examples carry broad-arrow and issue markings",
+                 notable_history="Large, highly legible Omega pilot watches issued to British and Commonwealth air forces in the early 1940s; genuine service-issued pieces are identified by caseback issue engravings.",
+                 source_notes="seed data, verify against Omega extract"),
+            dict(model_family="Medicus Doctor's Watch (pre-war)", reference_numbers=["CK2166", "CK2179"],
+                 serial_range_start="8500000", serial_range_end="10000000", production_period="1939-1944",
+                 case_material="Stainless steel", movement_caliber="Cal. 30T2 SC",
+                 dial_variants="Prominent central or subsidiary seconds for pulse-taking, clean high-contrast layout",
+                 notable_history="Marketed to physicians for taking a patient's pulse — an early example of Omega tailoring a manual-wind watch to a specific profession.",
+                 source_notes="seed data, verify against Omega extract"),
         ]
         for s in seeds:
-            await db.reference_entries.insert_one(ReferenceEntry(brand_id=oid, **s).model_dump())
+            exists = await db.reference_entries.find_one({"brand_id": oid, "model_family": s["model_family"]}, {"_id": 1})
+            if not exists:
+                await db.reference_entries.insert_one(ReferenceEntry(brand_id=oid, **s).model_dump())
 
     await get_settings()
 
