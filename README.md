@@ -4,9 +4,9 @@ AI-assisted vintage watch identification. Users upload guided photos + details o
 
 - **Frontend:** React 19, React Router, Tailwind CSS, framer-motion, sonner
 - **Backend:** FastAPI, Motor (async MongoDB)
-- **AI:** OpenAI GPT-5.4 vision via the Emergent universal LLM key (`emergentintegrations`)
-- **Auth:** Emergent-managed Google OAuth
-- **Storage:** Emergent object storage for uploaded photos
+- **AI:** Anthropic Claude vision, called directly with your own API key
+- **Auth:** Real Google OAuth (Authorization Code flow), self-hosted
+- **Storage:** Local disk (`backend/uploads/`) for uploaded photos
 - **Payments:** Stripe Checkout (one-time report unlock)
 
 ---
@@ -15,28 +15,34 @@ AI-assisted vintage watch identification. Users upload guided photos + details o
 
 ### Backend (`backend/.env`)
 
+See [`backend/.env.example`](backend/.env.example) for the full list with defaults. Key ones:
+
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `MONGO_URL` | yes | MongoDB connection string (e.g. `mongodb://localhost:27017`). |
-| `DB_NAME` | yes | Database name used for all collections (e.g. `test_database`). |
-| `EMERGENT_LLM_KEY` | yes | Universal key used for the GPT-5.4 vision analysis **and** to initialise object storage for photo uploads. |
-| `ADMIN_EMAILS` | no | Comma-separated allowlist of emails that are granted admin rights (reference-DB + settings management) on first login. Leave empty to grant admin manually. |
-| `STRIPE_SECRET_KEY` | yes (for payments) | Stripe secret key used to create Checkout sessions and read prices. |
-| `STRIPE_PUBLISHABLE_KEY` | no | Stripe publishable key (kept for reference / future client use). |
-| `STRIPE_WEBHOOK_SECRET` | yes (for payments) | Signing secret used to verify incoming Stripe webhooks at `/api/stripe/webhook`. |
-| `STRIPE_ACCOUNT_ID` | no | Stripe account id (informational). |
-| `STRIPE_MODE` | no | `test` or `live` (informational). |
+| `MONGO_URL` | yes | MongoDB connection string (e.g. `mongodb://localhost:27017` or an Atlas URI). |
+| `DB_NAME` | yes | Database name used for all collections. |
+| `ADMIN_EMAILS` | no | Comma-separated allowlist of emails granted admin rights on first login. |
+| `UPLOAD_DIR` | no | Local directory photos are written to (default `backend/uploads/`). |
+| `MAX_UPLOAD_MB` | no | Per-photo upload size cap (default 10MB). |
+| `ANTHROPIC_API_KEY` | yes (for AI analysis) | Your own Anthropic API key. Leave blank to keep AI analysis disabled — uploads/auth still work, `/analyze` returns a clear 503 instead of silently costing money. |
+| `ANTHROPIC_MODEL` | no | Model id for vision analysis (default `claude-sonnet-5`). |
+| `MAX_ANALYSES_PER_DAY_PER_USER` | no | Caps how many AI analyses one user can run per rolling 24h (default 10) — a guardrail against runaway API cost if the app is ever public. |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` | yes (for login) | Your own Google Cloud OAuth Web Client credentials. Leave blank to keep login disabled. |
+| `FRONTEND_URL` | yes | Where to redirect the browser after a successful Google login (e.g. `http://localhost:3000`). |
+| `COOKIE_SECURE` / `COOKIE_SAMESITE` | no | Session cookie flags. Use `false` / `lax` for local `http://` dev; `true` / `none` once deployed behind HTTPS. |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | yes (for payments) | Your own Stripe secret key and webhook signing secret. Leave blank to keep payments disabled. |
 | `REPORT_UNLOCK_LOOKUP_KEY` | no | Stripe Price `lookup_key` for the report unlock (default `report_unlock_single`). |
-| `CORS_ORIGINS` | no | Comma-separated list of allowed CORS origins (default `*`). |
-| `INTEGRATION_PROXY_URL` | no | Base URL of the Emergent integration proxy used for object storage. Falls back to the public integrations endpoint if unset. |
+| `CORS_ORIGINS` | no | Comma-separated list of allowed CORS origins. |
 
 ### Frontend (`frontend/.env`)
 
+See [`frontend/.env.example`](frontend/.env.example).
+
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `REACT_APP_BACKEND_URL` | yes | Base URL of the backend. All API calls are made to `${REACT_APP_BACKEND_URL}/api`. |
+| `REACT_APP_BACKEND_URL` | yes | Base URL of the backend (e.g. `http://localhost:8001`). All API calls are made to `${REACT_APP_BACKEND_URL}/api`. |
 
-> Secrets are never committed. When cloning fresh, recreate both `.env` files from the tables above.
+> Secrets are never committed — both `.env` files are gitignored. Copy the `.env.example` files and fill in real values as you get each credential.
 
 ---
 
@@ -45,19 +51,22 @@ AI-assisted vintage watch identification. Users upload guided photos + details o
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+ and **Yarn**
-- A running MongoDB instance
+- A MongoDB instance (local, or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
+
+Everything below runs with **empty** `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID/SECRET`, and `STRIPE_SECRET_KEY` — the server starts fine and logs a warning for each; those features just return a clear error until you add real credentials. Nothing calls a paid API until you set a key yourself.
 
 ### Backend
 ```bash
 cd backend
 pip install -r requirements.txt
-# create backend/.env with the variables listed above
+cp .env.example .env
+# edit backend/.env — MONGO_URL/DB_NAME are the only two you need to get it running
 # starts on 0.0.0.0:8001; all routes are prefixed with /api
 uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 ```
-On startup the backend seeds the Brands (Omega active; Rolex / Patek Philippe / Audemars Piguet as "coming soon") and a set of Omega reference entries (1930s–1970s), and initialises object storage.
+On startup the backend seeds the Brands (Omega active; Rolex / Patek Philippe / Audemars Piguet as "coming soon") and a set of Omega reference entries (1930s–1970s).
 
-### Stripe catalog (one-time)
+### Stripe catalog (one-time, once you have real Stripe keys)
 Creates the product + price used for the report unlock:
 ```bash
 python scripts/setup_stripe.py
@@ -67,7 +76,7 @@ python scripts/setup_stripe.py
 ```bash
 cd frontend
 yarn install
-# create frontend/.env with REACT_APP_BACKEND_URL
+cp .env.example .env
 yarn start   # dev server on port 3000
 ```
 
@@ -76,7 +85,7 @@ Open the frontend, sign in with Google, choose Omega, walk through the photo wiz
 ---
 
 ## API overview
-- `POST /api/auth/session`, `GET /api/auth/me`, `POST /api/auth/logout`
+- `GET /api/auth/google/login`, `GET /api/auth/google/callback`, `GET /api/auth/me`, `POST /api/auth/logout`
 - `GET /api/brands`, `GET/POST/PUT /api/brands` (admin for writes)
 - `GET/POST/PUT/DELETE /api/reference-entries` (admin for writes)
 - `POST /api/scans`, `GET /api/scans`, `GET /api/scans/{id}`, `PUT /api/scans/{id}/photos`, `PUT /api/scans/{id}/description`, `POST /api/scans/{id}/analyze`

@@ -6,19 +6,19 @@ import uuid
 import base64
 import logging
 from pathlib import Path
+from urllib.parse import urlencode
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 
 import requests
 import stripe
+import anthropic
 from dotenv import load_dotenv
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, UploadFile, File, Header, Query, Depends
-from fastapi.responses import Response as FastResponse
+from fastapi.responses import Response as FastResponse, RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
-
-from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -30,50 +30,50 @@ mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
 
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 ADMIN_EMAILS = [e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()]
 REPORT_LOOKUP_KEY = os.environ.get("REPORT_UNLOCK_LOOKUP_KEY", "report_unlock_single")
 
-stripe.api_key = os.environ.get("STRIPE_SECRET_KEY") or "sk_test_emergent"
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY") or ""
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
-# ----- Object storage -----
-STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
-STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
+# ----- AI vision (Anthropic Claude) -----
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
+anthropic_client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+
+# ----- Google OAuth -----
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "true").lower() == "true"
+COOKIE_SAMESITE = os.environ.get("COOKIE_SAMESITE", "none")
+
+# ----- Object storage (local disk) -----
+UPLOAD_DIR = Path(os.environ.get("UPLOAD_DIR") or (ROOT_DIR / "uploads"))
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 APP_NAME = "refcheck"
-_storage_key = None
+MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_MB", "10")) * 1024 * 1024
 
 MIME_TYPES = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp", "gif": "image/gif"}
 
 
-def init_storage(force: bool = False):
-    global _storage_key
-    if _storage_key and not force:
-        return _storage_key
-    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_LLM_KEY}, timeout=30)
-    resp.raise_for_status()
-    _storage_key = resp.json()["storage_key"]
-    return _storage_key
-
-
 def put_object(path: str, data: bytes, content_type: str) -> dict:
-    key = init_storage()
-    resp = requests.put(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key, "Content-Type": content_type}, data=data, timeout=120)
-    if resp.status_code == 404:
-        key = init_storage(force=True)
-        resp = requests.put(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key, "Content-Type": content_type}, data=data, timeout=120)
-    resp.raise_for_status()
-    return resp.json()
+    full = (UPLOAD_DIR / path).resolve()
+    if UPLOAD_DIR.resolve() not in full.parents:
+        raise HTTPException(status_code=400, detail="Invalid storage path")
+    full.parent.mkdir(parents=True, exist_ok=True)
+    full.write_bytes(data)
+    return {"path": path, "size": len(data)}
 
 
 def get_object(path: str):
-    key = init_storage()
-    resp = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
-    if resp.status_code == 404:
-        key = init_storage(force=True)
-        resp = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
-    resp.raise_for_status()
-    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+    full = (UPLOAD_DIR / path).resolve()
+    if UPLOAD_DIR.resolve() not in full.parents or not full.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    ext = full.suffix.lstrip(".").lower()
+    content_type = MIME_TYPES.get(ext, "application/octet-stream")
+    return full.read_bytes(), content_type
 
 
 app = FastAPI(title="RefCheck API")
@@ -198,35 +198,73 @@ async def require_admin(user: User = Depends(get_current_user)) -> User:
     return user
 
 
-@api.post("/auth/session")
-async def create_session(request: Request, response: Response):
-    body = await request.json()
-    session_id = body.get("session_id")
-    if not session_id:
-        raise HTTPException(status_code=400, detail="session_id required")
-    r = requests.get(
-        "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
-        headers={"X-Session-ID": session_id}, timeout=30,
+@api.get("/auth/google/login")
+async def google_login():
+    if not (GOOGLE_CLIENT_ID and GOOGLE_REDIRECT_URI):
+        raise HTTPException(status_code=503, detail="Google OAuth is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI.")
+    state = uuid.uuid4().hex
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "access_type": "online",
+        "prompt": "select_account",
+    }
+    resp = RedirectResponse(f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}")
+    resp.set_cookie("oauth_state", state, httponly=True, secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE, path="/", max_age=600)
+    return resp
+
+
+@api.get("/auth/google/callback")
+async def google_callback(request: Request, code: Optional[str] = Query(None), state: Optional[str] = Query(None), error: Optional[str] = Query(None)):
+    if error or not code:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=oauth_failed")
+    saved_state = request.cookies.get("oauth_state")
+    if not saved_state or saved_state != state:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=state_mismatch")
+
+    token_resp = requests.post("https://oauth2.googleapis.com/token", data={
+        "code": code, "client_id": GOOGLE_CLIENT_ID, "client_secret": GOOGLE_CLIENT_SECRET,
+        "redirect_uri": GOOGLE_REDIRECT_URI, "grant_type": "authorization_code",
+    }, timeout=30)
+    if token_resp.status_code != 200:
+        logger.warning(f"Google token exchange failed: {token_resp.text}")
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=token_exchange_failed")
+    access_token = token_resp.json()["access_token"]
+
+    userinfo_resp = requests.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        headers={"Authorization": f"Bearer {access_token}"}, timeout=30,
     )
-    if r.status_code != 200:
-        raise HTTPException(status_code=401, detail="Invalid session_id")
-    data = r.json()
-    email = data["email"].lower()
+    if userinfo_resp.status_code != 200:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=userinfo_failed")
+    info = userinfo_resp.json()
+    email = (info.get("email") or "").lower()
+    if not email:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=no_email")
+    name = info.get("name") or email.split("@")[0]
+    picture = info.get("picture")
+
     existing = await db.users.find_one({"email": email}, {"_id": 0})
     if existing:
         user_id = existing["user_id"]
         is_admin = existing.get("is_admin", False) or email in ADMIN_EMAILS
-        await db.users.update_one({"user_id": user_id}, {"$set": {"name": data["name"], "picture": data.get("picture"), "is_admin": is_admin}})
+        await db.users.update_one({"user_id": user_id}, {"$set": {"name": name, "picture": picture, "is_admin": is_admin}})
     else:
         user_id = f"user_{uuid.uuid4().hex[:12]}"
         is_admin = email in ADMIN_EMAILS
-        await db.users.insert_one(User(user_id=user_id, email=email, name=data["name"], picture=data.get("picture"), is_admin=is_admin).model_dump())
-    session_token = data["session_token"]
+        await db.users.insert_one(User(user_id=user_id, email=email, name=name, picture=picture, is_admin=is_admin).model_dump())
+
+    session_token = uuid.uuid4().hex + uuid.uuid4().hex
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
     await db.user_sessions.insert_one({"user_id": user_id, "session_token": session_token, "expires_at": expires_at.isoformat(), "created_at": now_iso()})
-    response.set_cookie("session_token", session_token, httponly=True, secure=True, samesite="none", path="/", max_age=7 * 24 * 3600)
-    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
-    return User(**user_doc)
+
+    resp = RedirectResponse(f"{FRONTEND_URL}/dashboard")
+    resp.set_cookie("session_token", session_token, httponly=True, secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE, path="/", max_age=7 * 24 * 3600)
+    resp.delete_cookie("oauth_state", path="/")
+    return resp
 
 
 @api.get("/auth/me", response_model=User)
@@ -372,6 +410,8 @@ async def upload_file(file: UploadFile = File(...), user: User = Depends(get_cur
     file_id = str(uuid.uuid4())
     path = f"{APP_NAME}/uploads/{user.user_id}/{file_id}.{ext}"
     data = await file.read()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail=f"File too large (max {MAX_UPLOAD_BYTES // (1024*1024)}MB)")
     result = put_object(path, data, content_type)
     await db.files.insert_one({
         "id": file_id, "storage_path": result["path"], "original_filename": file.filename,
@@ -495,12 +535,24 @@ def build_reference_context(entries: List[dict]) -> str:
     return "\n".join(lines)
 
 
+MAX_ANALYSES_PER_DAY = int(os.environ.get("MAX_ANALYSES_PER_DAY_PER_USER", "10"))
+
+
 @api.post("/scans/{scan_id}/analyze")
 async def analyze_scan(scan_id: str, user: User = Depends(get_current_user)):
+    if not anthropic_client:
+        raise HTTPException(status_code=503, detail="AI analysis is not configured. Set ANTHROPIC_API_KEY.")
+
     doc = await _get_owned_scan(scan_id, user)
     scan = Scan(**doc)
     if not scan.photos:
         raise HTTPException(status_code=400, detail="Upload at least one photo before analysis")
+
+    if MAX_ANALYSES_PER_DAY > 0:
+        since = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        recent_count = await db.scans.count_documents({"user_id": user.user_id, "analyzed_at": {"$gte": since}})
+        if recent_count >= MAX_ANALYSES_PER_DAY:
+            raise HTTPException(status_code=429, detail=f"Daily analysis limit reached ({MAX_ANALYSES_PER_DAY}/day). Try again tomorrow.")
 
     brand = await db.brands.find_one({"id": scan.brand_id}, {"_id": 0})
     brand_name = brand.get("name") if brand else "Unknown"
@@ -515,8 +567,8 @@ async def analyze_scan(scan_id: str, user: User = Depends(get_current_user)):
         if not rec:
             continue
         try:
-            data, _ = get_object(rec["storage_path"])
-            images.append(ImageContent(image_base64=base64.b64encode(data).decode()))
+            data, content_type = get_object(rec["storage_path"])
+            images.append({"media_type": rec.get("content_type") or content_type, "b64": base64.b64encode(data).decode()})
             photo_labels.append(p.slot)
         except Exception as ex:
             logger.warning(f"skip image {p.file_id}: {ex}")
@@ -546,22 +598,26 @@ INSTRUCTIONS:
 
 {ANALYSIS_SCHEMA_HINT}"""
 
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=f"scan_{scan_id}",
-        system_message="You are an expert vintage watch appraiser and horologist specializing in identifying watches from photographs. You are precise, cautious, and never claim certified authentication. You always answer with strictly valid JSON.",
-    ).with_model("openai", "gpt-5.4")
+    content = []
+    for img in images:
+        content.append({"type": "image", "source": {"type": "base64", "media_type": img["media_type"], "data": img["b64"]}})
+    content.append({"type": "text", "text": user_text})
 
-    message = UserMessage(text=user_text, file_contents=images if images else None)
     try:
-        raw = await chat.send_message(message)
+        response = await anthropic_client.messages.create(
+            model=ANTHROPIC_MODEL,
+            max_tokens=2000,
+            system="You are an expert vintage watch appraiser and horologist specializing in identifying watches from photographs. You are precise, cautious, and never claim certified authentication. You always answer with strictly valid JSON.",
+            messages=[{"role": "user", "content": content}],
+        )
+        raw = "".join(block.text for block in response.content if block.type == "text")
     except Exception as ex:
-        logger.exception("LLM analysis failed")
+        logger.exception("AI analysis failed")
         raise HTTPException(status_code=502, detail=f"AI analysis failed: {ex}")
 
     result = parse_json_result(raw)
     conf = float(result.get("confidence_percentage") or 0)
-    await db.scans.update_one({"id": scan_id}, {"$set": {"result": result, "confidence_score": conf, "status": "analyzed"}})
+    await db.scans.update_one({"id": scan_id}, {"$set": {"result": result, "confidence_score": conf, "status": "analyzed", "analyzed_at": now_iso()}})
 
     updated = await _get_owned_scan(scan_id, user)
     out = Scan(**updated)
@@ -866,11 +922,10 @@ async def import_community_csv():
 
 @app.on_event("startup")
 async def startup():
-    try:
-        init_storage()
-        logger.info("Storage initialized")
-    except Exception as e:
-        logger.error(f"Storage init failed: {e}")
+    if not ANTHROPIC_API_KEY:
+        logger.warning("ANTHROPIC_API_KEY not set — /api/scans/{id}/analyze will fail until it is configured.")
+    if not (GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI):
+        logger.warning("Google OAuth env vars not set — login will fail until GOOGLE_CLIENT_ID/SECRET/REDIRECT_URI are configured.")
     await seed_data()
     try:
         await import_community_csv()

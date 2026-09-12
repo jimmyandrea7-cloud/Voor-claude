@@ -1,9 +1,8 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AuthCallback from "./pages/AuthCallback";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import BrandSelect from "./pages/BrandSelect";
@@ -14,9 +13,6 @@ import Admin from "./pages/Admin";
 import { PaymentSuccess, PaymentCancel } from "./pages/Payment";
 
 function AppRouter() {
-  const location = useLocation();
-  if (location.hash?.includes("session_id=")) return <AuthCallback />;
-
   return (
     <Routes>
       <Route path="/" element={<Landing />} />

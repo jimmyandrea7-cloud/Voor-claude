@@ -1,9 +1,19 @@
+import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ArrowRight } from "lucide-react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Login() {
   const { user, login, loading } = useAuth();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("error")) {
+      toast.error("Sign-in failed. Please try again.");
+    }
+  }, [searchParams]);
+
   if (!loading && user) return <Navigate to="/dashboard" replace />;
 
   return (

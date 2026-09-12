@@ -83,9 +83,17 @@ android-sdk/
 
 # overlay black-box crash/user-report dumps — session data, never history
 **/.emergent/recordings/
+
+# Local dev server logs / uploaded photos (not part of the app)
+uvicorn_out.log
+uvicorn_err.log
+yarn_out.log
+yarn_err.log
+backend/uploads/
 .env
 .env.*
 *.env
+!.env.example
 credentials.json
 *.key
 .credentials
