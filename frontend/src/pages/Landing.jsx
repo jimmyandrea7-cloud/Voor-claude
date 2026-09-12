@@ -22,26 +22,26 @@ export default function Landing() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src={HERO} alt="" className="w-full h-full object-cover opacity-25" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#090D16]/70 via-[#090D16]/85 to-[#090D16]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#150E09]/70 via-[#150E09]/85 to-[#150E09]" />
         </div>
         <div className="relative z-10 max-w-6xl mx-auto px-5 pt-24 pb-20 md:pt-32 md:pb-28">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.2em] text-amber-300/80 border border-[#D4AF37]/30 rounded-full px-3 py-1">
-              <Watch className="w-3.5 h-3.5" /> Vintage watch identification
+            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.2em] text-[#E8A87C]/80 border border-[#E8A87C]/30 rounded-full px-3 py-1">
+              <Watch className="w-3.5 h-3.5" /> Inherited watch identification
             </span>
-            <h1 className="mt-6 font-serif text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight text-slate-100">
-              What is that old <span className="rc-gold-text">Omega</span> in your drawer, really?
+            <h1 className="mt-6 font-serif text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight text-[#FBF1E7]">
+              What story is hiding in your <span className="rc-gold-text">grandfather's</span> watch?
             </h1>
-            <p className="mt-6 text-base sm:text-lg text-slate-400 leading-relaxed max-w-xl">
-              Inherited or found a vintage watch? Upload a few photos and let an expert-grade AI identify the model
-              family, likely reference, era and story — with a clear confidence score.
+            <p className="mt-6 text-base sm:text-lg text-[#D8BFA8] leading-relaxed max-w-xl">
+              Inherited or found a vintage watch? Snap a few photos and let's find out together — the model
+              family, likely reference, era and the story behind it, with a clear confidence score.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
               <Link to={cta} data-testid="hero-start-btn" className="rc-gold-btn px-7 py-3.5 rounded-full font-semibold inline-flex items-center gap-2">
-                Identify my watch <ArrowRight className="w-4 h-4" />
+                Tell me its story <ArrowRight className="w-4 h-4" />
               </Link>
               {!user && (
-                <button onClick={login} data-testid="hero-google-btn" className="px-6 py-3.5 rounded-full border border-[#1E293B] text-slate-300 hover:border-[#D4AF37]/40 hover:text-slate-100 transition-colors">
+                <button onClick={login} data-testid="hero-google-btn" className="px-6 py-3.5 rounded-full border border-[#342115] text-[#D8BFA8] hover:border-[#E8A87C]/40 hover:text-[#FBF1E7] transition-colors">
                   Continue with Google
                 </button>
               )}
@@ -62,12 +62,12 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: i * 0.12 }}
               className="rc-card rounded-2xl p-7"
             >
-              <div className="w-11 h-11 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center mb-5">
-                <s.icon className="w-5 h-5 text-[#D4AF37]" />
+              <div className="w-11 h-11 rounded-xl bg-[#E8A87C]/10 border border-[#E8A87C]/30 flex items-center justify-center mb-5">
+                <s.icon className="w-5 h-5 text-[#E8A87C]" />
               </div>
-              <div className="font-mono text-[11px] text-slate-500 mb-1">0{i + 1}</div>
-              <h3 className="font-serif text-2xl text-slate-100 mb-2">{s.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{s.text}</p>
+              <div className="font-mono text-[11px] text-[#B89A82] mb-1">0{i + 1}</div>
+              <h3 className="font-serif text-2xl text-[#FBF1E7] mb-2">{s.title}</h3>
+              <p className="text-sm text-[#D8BFA8] leading-relaxed">{s.text}</p>
             </motion.div>
           ))}
         </div>
@@ -82,9 +82,9 @@ export default function Landing() {
             { icon: Sparkles, t: "The full story", d: "Unlock era, value range, authenticity signals and the historical context behind your watch." },
           ].map((f) => (
             <div key={f.t} className="flex flex-col">
-              <f.icon className="w-6 h-6 text-[#38BDF8] mb-3" />
-              <h4 className="text-slate-100 font-medium mb-1.5">{f.t}</h4>
-              <p className="text-sm text-slate-400 leading-relaxed">{f.d}</p>
+              <f.icon className="w-6 h-6 text-[#E8A87C] mb-3" />
+              <h4 className="text-[#FBF1E7] font-medium mb-1.5">{f.t}</h4>
+              <p className="text-sm text-[#D8BFA8] leading-relaxed">{f.d}</p>
             </div>
           ))}
         </div>

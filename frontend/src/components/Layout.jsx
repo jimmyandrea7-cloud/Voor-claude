@@ -7,7 +7,7 @@ export function Disclaimer({ compact }) {
   return (
     <div
       data-testid="legal-disclaimer"
-      className={`text-xs leading-relaxed text-slate-500 border border-[#1E293B] rounded-lg bg-[#0F172A]/60 ${compact ? "p-3" : "p-4"}`}
+      className={`text-xs leading-relaxed text-[#B89A82] border border-[#342115] rounded-lg bg-[#20140D]/60 ${compact ? "p-3" : "p-4"}`}
     >
       <span className="text-amber-300/80 font-mono uppercase tracking-wider text-[10px] block mb-1">Disclaimer</span>
       This is an AI-assisted estimate for informational purposes only — not a certified appraisal or authentication.
@@ -31,13 +31,13 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col rc-grain relative">
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#090D16]/85 border-b border-[#1E293B]">
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#150E09]/85 border-b border-[#342115]">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <Link to={user ? "/dashboard" : "/"} data-testid="brand-logo" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-full border border-[#D4AF37]/40 flex items-center justify-center group-hover:border-[#D4AF37] transition-colors">
-              <Watch className="w-5 h-5 text-[#D4AF37]" />
+            <div className="w-9 h-9 rounded-full border border-[#E8A87C]/40 flex items-center justify-center group-hover:border-[#E8A87C] transition-colors">
+              <Watch className="w-5 h-5 text-[#E8A87C]" />
             </div>
-            <span className="font-serif text-xl tracking-wide text-slate-100">Ref<span className="rc-gold-text">Check</span></span>
+            <span className="font-serif text-xl tracking-wide text-[#FBF1E7]">Ref<span className="rc-gold-text">Check</span></span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
@@ -47,14 +47,14 @@ export default function Layout({ children }) {
                 to={n.to}
                 data-testid={`nav-${n.to.replace("/", "")}`}
                 className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                  location.pathname === n.to ? "text-[#D4AF37]" : "text-slate-400 hover:text-slate-100"
+                  location.pathname === n.to ? "text-[#E8A87C]" : "text-[#D8BFA8] hover:text-[#FBF1E7]"
                 }`}
               >
                 {n.label}
               </Link>
             ))}
             {user ? (
-              <div className="flex items-center gap-3 ml-3 pl-3 border-l border-[#1E293B]">
+              <div className="flex items-center gap-3 ml-3 pl-3 border-l border-[#342115]">
                 <button
                   data-testid="start-scan-cta"
                   onClick={() => navigate("/scan")}
@@ -62,7 +62,7 @@ export default function Layout({ children }) {
                 >
                   New Identification
                 </button>
-                <button data-testid="logout-btn" onClick={logout} className="text-slate-400 hover:text-slate-100" title="Log out">
+                <button data-testid="logout-btn" onClick={logout} className="text-[#D8BFA8] hover:text-[#FBF1E7]" title="Log out">
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
@@ -78,7 +78,7 @@ export default function Layout({ children }) {
           </button>
         </div>
         {open && (
-          <div className="md:hidden border-t border-[#1E293B] bg-[#090D16] px-5 py-3 space-y-1">
+          <div className="md:hidden border-t border-[#342115] bg-[#150E09] px-5 py-3 space-y-1">
             {user ? (
               <>
                 {nav.map((n) => (
@@ -86,10 +86,10 @@ export default function Layout({ children }) {
                     {n.label}
                   </Link>
                 ))}
-                <button onClick={logout} className="block py-2 text-slate-400" data-testid="mobile-logout">Log out</button>
+                <button onClick={logout} className="block py-2 text-[#D8BFA8]" data-testid="mobile-logout">Log out</button>
               </>
             ) : (
-              <Link to="/login" onClick={() => setOpen(false)} className="block py-2 text-[#D4AF37]">Sign In</Link>
+              <Link to="/login" onClick={() => setOpen(false)} className="block py-2 text-[#E8A87C]">Sign In</Link>
             )}
           </div>
         )}
@@ -97,7 +97,7 @@ export default function Layout({ children }) {
 
       <main className="flex-1 pt-16 relative z-10">{children}</main>
 
-      <footer className="border-t border-[#1E293B] bg-[#090D16] relative z-10">
+      <footer className="border-t border-[#342115] bg-[#150E09] relative z-10">
         <div className="max-w-6xl mx-auto px-5 py-8 space-y-4">
           <Disclaimer compact />
           <p className="text-xs text-slate-600 text-center">© 2026 RefCheck — AI-assisted horological identification.</p>
