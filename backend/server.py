@@ -1,6 +1,7 @@
 """RefCheck backend — vintage watch identification (multi-brand ready, Omega at launch)."""
 import os
 import json
+import csv
 import uuid
 import base64
 import logging
@@ -767,6 +768,102 @@ async def seed_data():
     await get_settings()
 
 
+# ============================ Community CSV import (one-time) ============================
+CSV_IMPORT_KEY = "omega_csv_import_v1"
+CSV_PATH = ROOT_DIR / "data" / "omega_database.csv"
+CSV_SOURCE_NOTE = (
+    "Community-sourced: OmegaForums.net 'The ULTIMATE vintage OMEGA database' thread "
+    "(compiled by a forum member, building on Desmond's original Constellation database). "
+    "Not official Omega data — verify important matches with an Omega Extract from the Archives."
+)
+
+
+def _combine(values):
+    """Distinct, order-preserving, non-empty values joined for display."""
+    seen, out = set(), []
+    for v in values:
+        v = (v or "").strip()
+        if v and v.lower() not in seen:
+            seen.add(v.lower())
+            out.append(v)
+    return " · ".join(out)
+
+
+async def import_community_csv():
+    """One-time import of the community vintage Omega CSV. Never touches hand-curated entries."""
+    if await db.seed_meta.find_one({"key": CSV_IMPORT_KEY}):
+        return
+    if not CSV_PATH.exists():
+        logger.warning(f"Community CSV not found at {CSV_PATH}; skipping import.")
+        return
+
+    omega_doc = await db.brands.find_one({"name": "Omega"}, {"_id": 0})
+    if not omega_doc:
+        return
+    oid = omega_doc["id"]
+
+    with open(CSV_PATH, encoding="utf-8-sig", newline="") as f:
+        reader = csv.reader(f)
+        all_rows = [r for r in reader if any((c or "").strip() for c in r)]
+
+    # Locate the header row (the banner title occupies the first line).
+    header_idx = next((i for i, r in enumerate(all_rows) if r and r[0].strip() == "Case reference"), None)
+    if header_idx is None:
+        logger.warning("Community CSV header row not found; skipping import.")
+        return
+    data_rows = all_rows[header_idx + 1:]
+
+    # Column indices per the known schema.
+    C_CASE, C_LINE, C_DESC, C_CAL, C_YEAR, C_CASETYPE, C_MATERIAL, C_DIAL, C_CATREF = 0, 1, 3, 5, 6, 7, 8, 9, 11
+
+    groups = {}
+    order = []
+    for r in data_rows:
+        if len(r) <= C_LINE:
+            continue
+        case_ref = (r[C_CASE] or "").strip()
+        product_line = (r[C_LINE] or "").strip()
+        if not product_line and not case_ref:
+            continue
+        key = (product_line, case_ref)
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(r)
+
+    def cell(row, idx):
+        return row[idx].strip() if len(row) > idx and row[idx] else ""
+
+    docs = []
+    for key in order:
+        product_line, case_ref = key
+        rows = groups[key]
+        cat_refs = _combine(cell(r, C_CATREF) for r in rows)
+        reference_numbers = []
+        if case_ref:
+            reference_numbers.append(case_ref)
+        for cr in [c for c in (cat_refs.split(" · ") if cat_refs else []) if c]:
+            reference_numbers.append(cr)
+
+        entry = ReferenceEntry(
+            brand_id=oid,
+            model_family=product_line or "Omega (unspecified line)",
+            reference_numbers=reference_numbers,
+            production_period=_combine(cell(r, C_YEAR) for r in rows),
+            case_material=_combine(cell(r, C_MATERIAL) for r in rows),
+            movement_caliber=_combine(cell(r, C_CAL) for r in rows),
+            dial_variants=_combine(cell(r, C_DIAL) for r in rows),
+            notable_history=_combine(cell(r, C_DESC) for r in rows),
+            source_notes=CSV_SOURCE_NOTE,
+        )
+        docs.append(entry.model_dump())
+
+    if docs:
+        await db.reference_entries.insert_many(docs)
+    await db.seed_meta.insert_one({"key": CSV_IMPORT_KEY, "done": True, "count": len(docs), "imported_at": now_iso()})
+    logger.info(f"Community CSV import complete: {len(docs)} reference entries added.")
+
+
 @app.on_event("startup")
 async def startup():
     try:
@@ -775,6 +872,10 @@ async def startup():
     except Exception as e:
         logger.error(f"Storage init failed: {e}")
     await seed_data()
+    try:
+        await import_community_csv()
+    except Exception as e:
+        logger.error(f"Community CSV import failed: {e}")
 
 
 @app.on_event("shutdown")
