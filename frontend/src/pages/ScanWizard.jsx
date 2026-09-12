@@ -3,35 +3,34 @@ import { useParams, useNavigate } from "react-router-dom";
 import api, { API } from "../lib/api";
 import Layout from "../components/Layout";
 import { toast } from "sonner";
-import { Camera, Check, Upload, ArrowRight, ArrowLeft, Loader2, Info, X } from "lucide-react";
+import { Camera, Check, ArrowRight, ArrowLeft, Loader2, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 const PHOTO_SLOTS = [
-  { id: "dial", label: "Full Dial / Face", required: true, reason: "Evaluates logo font, hand style, sub-dials, hour markers and patina — the single most telling photo." },
-  { id: "caseback", label: "Case Back", required: true, reason: "Reveals medallions (e.g. Seamaster Hippocampus), case numbers and water-resistance hallmarks." },
-  { id: "serial", label: "Serial / Ref Stamp", required: true, reason: "Pinpoints the production batch and reference code, usually on the inner case back or between the lugs." },
-  { id: "lug_profile", label: "Lug & Case Profile", required: true, reason: "Shows polish history, lug bevels and case thickness — key to originality." },
-  { id: "crown", label: "Crown Close-up", required: false, reason: "Confirms an original Ω-stamped crown versus an aftermarket replacement." },
-  { id: "movement", label: "Caliber / Movement", required: false, reason: "If the case back opens or is transparent, the caliber number narrows the era dramatically." },
-  { id: "strap", label: "Bracelet / Clasp", required: false, reason: "End-link and clasp codes help confirm a period-correct bracelet." },
+  { id: "dial", label: "Full dial", required: true, reason: "Straight-on. Logo, handset, indices and patina." },
+  { id: "caseback", label: "Case back", required: true, reason: "Engravings, medallions and case numbers." },
+  { id: "serial", label: "Serial / reference", required: true, reason: "Usually between the lugs or inside the case back." },
+  { id: "lug_profile", label: "Lug & case profile", required: true, reason: "Side view — polishing history and case sharpness." },
+  { id: "crown", label: "Crown", required: false, reason: "Confirms an original Ω-signed crown." },
+  { id: "movement", label: "Movement", required: false, reason: "If it opens: the calibre number dates it precisely." },
+  { id: "strap", label: "Bracelet & clasp", required: false, reason: "End-links and clasp codes confirm a period-correct bracelet." },
 ];
 
 const CONDITIONS = ["working", "not working", "unknown"];
 const BOX_PAPERS = ["yes", "no", "unsure"];
+const STAGES = ["Reading the photographs", "Extracting serial & reference marks", "Cross-checking Omega reference data", "Weighing the confidence figure"];
 
 export default function ScanWizard() {
   const { scanId } = useParams();
   const navigate = useNavigate();
   const [scan, setScan] = useState(null);
-  const [photos, setPhotos] = useState({}); // slot -> {file_id, preview}
+  const [photos, setPhotos] = useState({});
   const [uploading, setUploading] = useState(null);
-  const [phase, setPhase] = useState("photos"); // photos | details
+  const [phase, setPhase] = useState("photos");
   const [analyzing, setAnalyzing] = useState(false);
   const [stageIdx, setStageIdx] = useState(0);
   const [desc, setDesc] = useState({ provenance: "", engravings: "", condition: "unknown", box_papers: "unsure", caseback_numbers: "" });
   const fileRefs = useRef({});
-
-  const STAGES = ["Uploading photographs", "Extracting optical features", "Cross-referencing the Omega reference database", "Calculating confidence score"];
 
   useEffect(() => {
     api.get(`/scans/${scanId}`).then((r) => {
@@ -78,7 +77,7 @@ export default function ScanWizard() {
   };
 
   const goDetails = async () => {
-    if (!requiredDone) { toast.error("Please add the four required photos first."); return; }
+    if (!requiredDone) { toast.error("Please add the four required photographs first."); return; }
     await savePhotos();
     setPhase("details");
     window.scrollTo(0, 0);
@@ -96,23 +95,23 @@ export default function ScanWizard() {
     }
   };
 
-  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-7 h-7 text-[#D4AF37] animate-spin" /></div></Layout>;
+  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#2A2420] animate-spin" /></div></Layout>;
 
   if (analyzing) {
     return (
       <Layout>
-        <div className="max-w-md mx-auto px-5 py-24 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full border-2 border-[#D4AF37]/30 border-t-[#D4AF37] rc-spin-slow" />
-          <h2 className="mt-8 font-serif text-3xl text-slate-100">Examining your watch</h2>
-          <div className="mt-8 space-y-3 text-left">
+        <div className="max-w-md mx-auto px-6 py-24">
+          <div className="w-12 h-12 rounded-full border-2 border-[#E4E1DA] border-t-[#2A2420] rc-spin-slow" />
+          <h2 className="mt-8 font-serif text-3xl text-[#2A2420]">Under examination</h2>
+          <div className="mt-8 space-y-3.5">
             {STAGES.map((s, i) => (
-              <div key={s} data-testid={`analysis-stage-${i}`} className={`flex items-center gap-3 text-sm transition-colors ${i <= stageIdx ? "text-slate-200" : "text-slate-600"}`}>
-                {i < stageIdx ? <Check className="w-4 h-4 text-[#D4AF37]" /> : i === stageIdx ? <Loader2 className="w-4 h-4 text-[#D4AF37] animate-spin" /> : <div className="w-4 h-4 rounded-full border border-slate-700" />}
+              <div key={s} data-testid={`analysis-stage-${i}`} className={`flex items-center gap-3 text-[13px] transition-colors ${i <= stageIdx ? "text-[#2A2420]" : "text-[#B8B0A4]"}`}>
+                {i < stageIdx ? <Check className="w-4 h-4" /> : i === stageIdx ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border border-[#D8D3C8]" />}
                 {s}
               </div>
             ))}
           </div>
-          <p className="mt-8 text-xs text-slate-500">This can take up to a minute. Please keep this page open.</p>
+          <p className="mt-10 text-xs text-[#A79E92]">This can take up to a minute. Please keep this page open.</p>
         </div>
       </Layout>
     );
@@ -120,51 +119,53 @@ export default function ScanWizard() {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto px-5 py-10">
+      <div className="max-w-2xl mx-auto px-6 py-12">
         {phase === "photos" ? (
           <>
-            <div className="mb-8 rc-fade-up">
-              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-300/80">Step 2 of 4 · Photographs</span>
-              <h1 className="mt-3 font-serif text-4xl text-slate-100">Capture your Omega</h1>
-              <p className="mt-2 text-slate-400">Four photos are required (marked ●). The more you add, the higher the confidence.</p>
-              <div className="mt-4 h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
-                <div className="h-full rc-gold-btn transition-all" style={{ width: `${(uploadedCount / PHOTO_SLOTS.length) * 100}%` }} />
+            <div className="mb-9 rc-fade-up">
+              <span className="eyebrow">Step 02 — Photographs</span>
+              <h1 className="mt-4 font-serif text-4xl text-[#2A2420]">The record</h1>
+              <p className="mt-3 text-[14px] text-[#6B6259]">Four angles are required. Each additional photograph sharpens the result.</p>
+              <div className="mt-5 flex items-center gap-3">
+                <div className="flex-1 h-px bg-[#E4E1DA] relative">
+                  <div className="absolute left-0 top-0 h-px bg-[#2A2420] transition-all" style={{ width: `${(uploadedCount / PHOTO_SLOTS.length) * 100}%` }} />
+                </div>
+                <span className="eyebrow">{uploadedCount} / {PHOTO_SLOTS.length}</span>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="border border-[#E4E1DA] rounded-[4px] divide-y divide-[#E4E1DA] bg-white">
               {PHOTO_SLOTS.map((slot) => {
                 const has = photos[slot.id];
                 return (
-                  <div key={slot.id} className={`rc-card rounded-xl p-4 flex gap-4 items-center ${has ? "border-[#D4AF37]/30" : ""}`} data-testid={`photo-slot-${slot.id}`}>
-                    <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden border border-[#1E293B] bg-[#0F172A] flex items-center justify-center relative">
+                  <div key={slot.id} className="p-4 flex gap-4 items-center" data-testid={`photo-slot-${slot.id}`}>
+                    <div className="w-16 h-16 shrink-0 rounded-[3px] overflow-hidden border border-[#E4E1DA] bg-[#FAFAF8] flex items-center justify-center relative">
                       {has ? (
                         <>
                           <img src={has.preview || `${API}/files/${has.file_id}`} alt="" className="w-full h-full object-cover" />
-                          <button onClick={() => removePhoto(slot.id)} data-testid={`remove-photo-${slot.id}`} className="absolute top-1 right-1 bg-black/70 rounded-full p-0.5 text-slate-200 hover:text-white">
+                          <button onClick={() => removePhoto(slot.id)} data-testid={`remove-photo-${slot.id}`} className="absolute top-1 right-1 bg-white/90 rounded-full p-0.5 text-[#2A2420] hover:bg-white">
                             <X className="w-3.5 h-3.5" />
                           </button>
                         </>
                       ) : (
-                        <Camera className="w-6 h-6 text-slate-600" />
+                        <Camera className="w-5 h-5 text-[#C7C2B7]" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-slate-100 font-medium">{slot.label}</h3>
-                        {slot.required && <span className="text-[#D4AF37] text-xs">●</span>}
+                        <h3 className="text-[#2A2420] font-medium text-[15px]">{slot.label}</h3>
+                        {slot.required && <span className="text-[10px] uppercase tracking-[0.14em] text-[#A79E92]">Required</span>}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5 flex items-start gap-1 leading-relaxed"><Info className="w-3 h-3 mt-0.5 shrink-0 text-slate-600" />{slot.reason}</p>
+                      <p className="text-[12px] text-[#6B6259] mt-0.5 leading-relaxed">{slot.reason}</p>
                     </div>
                     <input ref={(el) => (fileRefs.current[slot.id] = el)} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => handleFile(slot.id, e.target.files[0])} data-testid={`file-input-${slot.id}`} />
                     <button
                       onClick={() => fileRefs.current[slot.id]?.click()}
                       disabled={uploading === slot.id}
                       data-testid={`upload-btn-${slot.id}`}
-                      className={`shrink-0 px-3 py-2 rounded-lg text-sm inline-flex items-center gap-1.5 transition-colors ${has ? "text-slate-400 hover:text-slate-100 border border-[#1E293B]" : "rc-gold-btn font-medium"}`}
+                      className={`shrink-0 ${has ? "btn btn-outline btn-sm" : "btn btn-sm"}`}
                     >
-                      {uploading === slot.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                      {has ? "Replace" : "Add"}
+                      {uploading === slot.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (has ? "Replace" : "Add")}
                     </button>
                   </div>
                 );
@@ -172,50 +173,50 @@ export default function ScanWizard() {
             </div>
 
             <div className="mt-8 flex justify-between items-center">
-              <button onClick={() => navigate("/scan")} className="text-slate-400 hover:text-slate-100 inline-flex items-center gap-1.5 text-sm"><ArrowLeft className="w-4 h-4" /> Back</button>
-              <button onClick={goDetails} disabled={!requiredDone} data-testid="photos-continue-btn" className="rc-gold-btn px-6 py-3 rounded-full font-semibold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
-                Continue <ArrowRight className="w-4 h-4" />
+              <button onClick={() => navigate("/scan")} className="text-[#6B6259] hover:text-[#2A2420] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Back</button>
+              <button onClick={goDetails} disabled={!requiredDone} data-testid="photos-continue-btn" className="btn">
+                Continue <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </>
         ) : (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="mb-8">
-              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-300/80">Step 3 of 4 · Details</span>
-              <h1 className="mt-3 font-serif text-4xl text-slate-100">Tell us a little more</h1>
-              <p className="mt-2 text-slate-400">Optional, but every detail sharpens the identification.</p>
+            <div className="mb-9">
+              <span className="eyebrow">Step 03 — Detail</span>
+              <h1 className="mt-4 font-serif text-4xl text-[#2A2420]">What you know</h1>
+              <p className="mt-3 text-[14px] text-[#6B6259]">Optional. Anything you add narrows the identification.</p>
             </div>
 
-            <div className="space-y-5">
-              <Field label="Where / how did you get this watch?" hint="For context only — not stored as sensitive data.">
-                <input data-testid="desc-provenance" value={desc.provenance} onChange={(e) => setDesc({ ...desc, provenance: e.target.value })} placeholder="e.g. Inherited from my grandfather" className={inputCls} />
+            <div className="space-y-6">
+              <Field label="How the watch came to you" hint="Context only — not stored as sensitive data.">
+                <input data-testid="desc-provenance" value={desc.provenance} onChange={(e) => setDesc({ ...desc, provenance: e.target.value })} placeholder="Inherited from my grandfather" className="field" />
               </Field>
-              <Field label="Any visible engravings or text?">
-                <textarea data-testid="desc-engravings" value={desc.engravings} onChange={(e) => setDesc({ ...desc, engravings: e.target.value })} rows={2} placeholder="Text on the case back, inside the caseband, on the movement…" className={inputCls} />
+              <Field label="Engravings or text">
+                <textarea data-testid="desc-engravings" value={desc.engravings} onChange={(e) => setDesc({ ...desc, engravings: e.target.value })} rows={2} placeholder="On the case back, inside the caseband, on the movement…" className="field" />
               </Field>
-              <Field label="Any numbers on the case back or dial?">
-                <input data-testid="desc-numbers" value={desc.caseback_numbers} onChange={(e) => setDesc({ ...desc, caseback_numbers: e.target.value })} placeholder="e.g. 145.022, serial 32104xxx" className={inputCls} />
+              <Field label="Numbers on the case back or dial">
+                <input data-testid="desc-numbers" value={desc.caseback_numbers} onChange={(e) => setDesc({ ...desc, caseback_numbers: e.target.value })} placeholder="145.022, serial 32104xxx" className="field" />
               </Field>
-              <Field label="Approximate condition">
+              <Field label="Condition">
                 <div className="flex flex-wrap gap-2">
                   {CONDITIONS.map((c) => (
-                    <button key={c} data-testid={`condition-${c.replace(/\s+/g, "-")}`} onClick={() => setDesc({ ...desc, condition: c })} className={pill(desc.condition === c)}>{c}</button>
+                    <button key={c} data-testid={`condition-${c.replace(/\s+/g, "-")}`} onClick={() => setDesc({ ...desc, condition: c })} className={`chip ${desc.condition === c ? "chip-active" : ""}`}>{c}</button>
                   ))}
                 </div>
               </Field>
-              <Field label="Original box / papers?">
+              <Field label="Original box or papers">
                 <div className="flex flex-wrap gap-2">
                   {BOX_PAPERS.map((c) => (
-                    <button key={c} data-testid={`boxpapers-${c}`} onClick={() => setDesc({ ...desc, box_papers: c })} className={pill(desc.box_papers === c)}>{c}</button>
+                    <button key={c} data-testid={`boxpapers-${c}`} onClick={() => setDesc({ ...desc, box_papers: c })} className={`chip ${desc.box_papers === c ? "chip-active" : ""}`}>{c}</button>
                   ))}
                 </div>
               </Field>
             </div>
 
-            <div className="mt-9 flex justify-between items-center">
-              <button onClick={() => setPhase("photos")} className="text-slate-400 hover:text-slate-100 inline-flex items-center gap-1.5 text-sm"><ArrowLeft className="w-4 h-4" /> Photos</button>
-              <button onClick={runAnalysis} data-testid="run-analysis-btn" className="rc-gold-btn px-7 py-3 rounded-full font-semibold inline-flex items-center gap-2">
-                Identify my watch <ArrowRight className="w-4 h-4" />
+            <div className="mt-10 flex justify-between items-center">
+              <button onClick={() => setPhase("photos")} className="text-[#6B6259] hover:text-[#2A2420] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Photographs</button>
+              <button onClick={runAnalysis} data-testid="run-analysis-btn" className="btn">
+                Identify <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </motion.div>
@@ -225,13 +226,10 @@ export default function ScanWizard() {
   );
 }
 
-const inputCls = "w-full bg-[#0F172A] border border-[#1E293B] rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#D4AF37]/50 transition-colors text-sm";
-const pill = (active) => `px-4 py-2 rounded-full text-sm capitalize transition-colors ${active ? "rc-gold-btn font-medium" : "border border-[#1E293B] text-slate-400 hover:text-slate-100"}`;
-
 function Field({ label, hint, children }) {
   return (
     <div>
-      <label className="block text-sm text-slate-300 mb-2">{label} {hint && <span className="text-slate-600 text-xs">— {hint}</span>}</label>
+      <label className="block text-[13px] text-[#2A2420] mb-2 font-medium">{label} {hint && <span className="text-[#A79E92] font-normal">— {hint}</span>}</label>
       {children}
     </div>
   );

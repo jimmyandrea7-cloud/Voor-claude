@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api, { API } from "../lib/api";
+import api from "../lib/api";
 import Layout, { Disclaimer } from "../components/Layout";
 import { toast } from "sonner";
-import {
-  Loader2, Lock, Check, AlertTriangle, TrendingUp, ShieldCheck, ScrollText,
-  Gem, Wrench, Sparkles, ArrowLeft, Unlock,
-} from "lucide-react";
+import { Loader2, Check, AlertTriangle, ArrowLeft, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ScanResult() {
@@ -33,7 +30,7 @@ export default function ScanResult() {
     }
   };
 
-  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-7 h-7 text-[#D4AF37] animate-spin" /></div></Layout>;
+  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#2A2420] animate-spin" /></div></Layout>;
 
   const r = scan.result || {};
   const conf = r.confidence_percentage ?? 0;
@@ -42,101 +39,99 @@ export default function ScanResult() {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto px-5 py-10">
-        <button onClick={() => navigate("/dashboard")} className="text-slate-400 hover:text-slate-100 inline-flex items-center gap-1.5 text-sm mb-6"><ArrowLeft className="w-4 h-4" /> My Collection</button>
+      <div className="max-w-2xl mx-auto px-6 py-12">
+        <button onClick={() => navigate("/dashboard")} className="text-[#6B6259] hover:text-[#2A2420] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] mb-8"><ArrowLeft className="w-3.5 h-3.5" /> Collection</button>
 
         {/* Headline */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rc-card rounded-2xl p-7 border-[#D4AF37]/25" data-testid="result-headline">
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-300/80">Preliminary identification</span>
-          <div className="mt-3 flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="font-serif text-3xl sm:text-4xl text-slate-100 leading-tight" data-testid="result-model-family">{r.likely_model_family || "Undetermined"}</h1>
-              <p className="text-slate-400 mt-1">{scan.brand_name || "Omega"} · {r.used_database_match ? "Database-corroborated" : "Visual reasoning only"}</p>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} data-testid="result-headline">
+          <span className="eyebrow">Preliminary identification</span>
+          <div className="mt-4 flex items-start justify-between gap-6 flex-wrap">
+            <div className="flex-1 min-w-0">
+              <h1 className="font-serif text-4xl sm:text-5xl text-[#2A2420] leading-[1.05]" data-testid="result-model-family">{r.likely_model_family || "Undetermined"}</h1>
+              <p className="text-[13px] text-[#6B6259] mt-3">
+                {scan.brand_name || "Omega"} · {r.used_database_match ? "Corroborated by reference data" : "Visual reasoning only"}
+              </p>
             </div>
             <ConfidenceRing value={conf} />
           </div>
 
           {r.headline_highlights?.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               {r.headline_highlights.map((h, i) => (
-                <span key={i} className="text-xs bg-[#0F172A] border border-[#1E293B] rounded-full px-3 py-1.5 text-slate-300">{h}</span>
+                <span key={i} className="text-[12px] border border-[#E4E1DA] rounded-[3px] px-3 py-1.5 text-[#6B6259] bg-white">{h}</span>
               ))}
             </div>
           )}
 
           {lowConf && (
-            <div className="mt-5 flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/25 rounded-lg p-3.5" data-testid="low-confidence-note">
-              <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-              <p className="text-sm text-amber-200/90 leading-relaxed">
-                This identification is uncertain. {r.additional_photo_suggestion || "A clearer photo of the serial number and case back would help most."}
+            <div className="mt-6 flex items-start gap-2.5 border border-[#E4E1DA] bg-[#FAFAF8] rounded-[3px] p-4" data-testid="low-confidence-note">
+              <AlertTriangle className="w-4 h-4 text-[#6B6259] mt-0.5 shrink-0" />
+              <p className="text-[13px] text-[#6B6259] leading-relaxed">
+                The evidence is thin, so this remains uncertain. {r.additional_photo_suggestion || "A sharper photograph of the serial number and case back would help most."}
               </p>
             </div>
           )}
         </motion.div>
 
-        {/* Paid vs paywall */}
+        <div className="my-9 h-px bg-[#E4E1DA]" />
+
         {scan.paid ? (
-          <FullReport r={r} scan={scan} />
+          <FullReport r={r} />
         ) : (
-          <Paywall r={r} priceDisplay={priceDisplay} onUnlock={unlock} checkingOut={checkingOut} settings={settings} />
+          <Paywall priceDisplay={priceDisplay} onUnlock={unlock} checkingOut={checkingOut} settings={settings} />
         )}
 
-        <div className="mt-8"><Disclaimer /></div>
+        <div className="mt-10"><Disclaimer /></div>
       </div>
     </Layout>
   );
 }
 
 function ConfidenceRing({ value }) {
-  const size = 92, stroke = 8, radius = (size - stroke) / 2, circ = 2 * Math.PI * radius;
-  const color = value >= 70 ? "#D4AF37" : value >= 40 ? "#38BDF8" : "#f59e0b";
+  const size = 96, stroke = 6, radius = (size - stroke) / 2, circ = 2 * Math.PI * radius;
   return (
-    <div className="relative" style={{ width: size, height: size }} data-testid="confidence-ring">
+    <div className="relative shrink-0" style={{ width: size, height: size }} data-testid="confidence-ring">
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#1E293B" strokeWidth={stroke} fill="none" />
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ - (value / 100) * circ} style={{ transition: "stroke-dashoffset 1s ease" }} />
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#E4E1DA" strokeWidth={stroke} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#2A2420" strokeWidth={stroke} fill="none" strokeLinecap="butt" strokeDasharray={circ} strokeDashoffset={circ - (value / 100) * circ} style={{ transition: "stroke-dashoffset 1s ease" }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-serif text-2xl text-slate-100" data-testid="confidence-value">{value}%</span>
-        <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500">Match</span>
+        <span className="font-serif text-3xl text-[#2A2420]" data-testid="confidence-value">{value}</span>
+        <span className="eyebrow" style={{ fontSize: 9 }}>Confidence</span>
       </div>
     </div>
   );
 }
 
-function Paywall({ r, priceDisplay, onUnlock, checkingOut, settings }) {
+function Paywall({ priceDisplay, onUnlock, checkingOut, settings }) {
   const perks = [
-    "Exact reference numbers & caliber match",
-    "Estimated production era",
-    "Confidence breakdown (what raised & lowered it)",
-    "Authenticity signals",
+    "Reference numbers, ranked, with the matching calibre",
+    "Estimated production years",
+    "Confidence breakdown — what raised and lowered it",
+    "Authenticity signals, stated as signals",
     "Market valuation range",
-    "Condition notes & the collector's story",
+    "Condition notes and the model's history",
   ];
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-      className="mt-6 rounded-2xl p-8 relative overflow-hidden border border-[#D4AF37]/40"
-      style={{ background: "linear-gradient(135deg,#1E293B 0%,#0F172A 55%,#111827 100%)" }}
-      data-testid="paywall-card">
-      <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-[#D4AF37]/10 blur-3xl" />
-      <div className="relative">
-        <div className="w-11 h-11 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center mb-4">
-          <Lock className="w-5 h-5 text-[#D4AF37]" />
-        </div>
-        <h2 className="font-serif text-3xl text-slate-100">Unlock the full appraisal</h2>
-        <p className="mt-2 text-slate-400 text-sm max-w-md">You've seen the headline match. Unlock the complete horologist report for this watch.</p>
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card rounded-[4px] p-8" data-testid="paywall-card">
+      <span className="eyebrow">The full identification</span>
+      <h2 className="mt-3 font-serif text-3xl text-[#2A2420]">Read the complete report</h2>
+      <p className="mt-3 text-[14px] text-[#6B6259] max-w-md">
+        You have the headline match. The full report sets out the reference, the era, and the reasoning behind every point — everything you would want before you insure, sell, or simply understand it.
+      </p>
 
-        <ul className="mt-6 grid sm:grid-cols-2 gap-2.5">
-          {perks.map((p) => (
-            <li key={p} className="flex items-start gap-2 text-sm text-slate-300"><Check className="w-4 h-4 text-[#D4AF37] mt-0.5 shrink-0" />{p}</li>
-          ))}
-        </ul>
+      <ul className="mt-7 grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+        {perks.map((p) => (
+          <li key={p} className="flex items-start gap-2.5 text-[13px] text-[#2A2420]"><Check className="w-4 h-4 text-[#6B6259] mt-0.5 shrink-0" />{p}</li>
+        ))}
+      </ul>
 
-        <button onClick={onUnlock} disabled={checkingOut} data-testid="unlock-report-button" className="mt-7 w-full sm:w-auto rc-gold-btn px-7 py-3.5 rounded-full font-semibold inline-flex items-center justify-center gap-2">
-          {checkingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />}
-          Unlock full report — {priceDisplay}
+      <div className="mt-8 flex items-center gap-5 flex-wrap">
+        <button onClick={onUnlock} disabled={checkingOut} data-testid="unlock-report-button" className="btn">
+          {checkingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+          Unlock the report — {priceDisplay}
         </button>
-        <p className="mt-3 text-xs text-slate-500">One-time payment for this report. Secure checkout via Stripe.
+        <p className="text-xs text-[#A79E92] max-w-[16rem]">One-time payment for this report. Secure checkout via Stripe.
           {settings?.subscription_enabled && ` Or subscribe: ${settings.subscription_price_display}.`}
         </p>
       </div>
@@ -144,82 +139,77 @@ function Paywall({ r, priceDisplay, onUnlock, checkingOut, settings }) {
   );
 }
 
-function Section({ icon: Icon, title, children, testid }) {
+function ReportSection({ title, children, testid }) {
   return (
-    <div className="rc-card rounded-2xl p-6" data-testid={testid}>
-      <div className="flex items-center gap-2.5 mb-4">
-        <Icon className="w-5 h-5 text-[#D4AF37]" />
-        <h3 className="font-serif text-2xl text-slate-100">{title}</h3>
-      </div>
-      {children}
+    <div className="pt-7 border-t border-[#E4E1DA]" data-testid={testid}>
+      <span className="eyebrow">{title}</span>
+      <div className="mt-4">{children}</div>
     </div>
   );
 }
 
-function FullReport({ r, scan }) {
+function FullReport({ r }) {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 space-y-4" data-testid="full-report">
-      <div className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 rounded-full px-3 py-1.5">
-        <Unlock className="w-3.5 h-3.5" /> Full appraisal unlocked
-      </div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-7" data-testid="full-report">
+      <span className="inline-flex items-center gap-1.5 eyebrow"><Check className="w-3.5 h-3.5" /> Full report</span>
 
-      <Section icon={Gem} title="Reference & era" testid="report-reference">
-        <div className="grid sm:grid-cols-2 gap-4 text-sm">
-          <Meta label="Likely reference numbers" value={(r.likely_reference_numbers || []).join(", ") || "—"} mono />
+      <ReportSection title="Reference & era" testid="report-reference">
+        <div className="grid sm:grid-cols-2 gap-5 text-[14px]">
+          <Meta label="Likely references" value={(r.likely_reference_numbers || []).join(",  ") || "—"} />
           <Meta label="Estimated period" value={r.estimated_period || "—"} />
-          <Meta label="Database match" value={r.used_database_match ? "Yes — corroborated by reference data" : "No — based on visual reasoning"} />
+          <Meta label="Reference-data match" value={r.used_database_match ? "Corroborated by documented references" : "Not matched — visual reasoning"} />
         </div>
-      </Section>
+      </ReportSection>
 
       {r.confidence_breakdown?.length > 0 && (
-        <Section icon={TrendingUp} title="Confidence breakdown" testid="report-confidence-breakdown">
-          <ul className="space-y-2">
+        <ReportSection title="Confidence breakdown" testid="report-confidence-breakdown">
+          <ul className="space-y-2.5">
             {r.confidence_breakdown.map((c, i) => (
-              <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-[#D4AF37] mt-0.5">•</span>{c}</li>
+              <li key={i} className="text-[14px] text-[#2A2420] flex items-start gap-3"><span className="text-[#C7C2B7] mt-0.5">—</span>{c}</li>
             ))}
           </ul>
-        </Section>
+        </ReportSection>
       )}
 
       {r.authenticity_signals?.length > 0 && (
-        <Section icon={ShieldCheck} title="Authenticity signals" testid="report-authenticity">
-          <p className="text-xs text-slate-500 mb-3">Non-definitive observations — not a certified authentication.</p>
-          <ul className="space-y-2">
+        <ReportSection title="Authenticity signals" testid="report-authenticity">
+          <p className="text-[12px] text-[#A79E92] mb-3">Signals only — not a certified authentication.</p>
+          <ul className="space-y-2.5">
             {r.authenticity_signals.map((c, i) => (
-              <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-[#38BDF8] mt-0.5">•</span>{c}</li>
+              <li key={i} className="text-[14px] text-[#2A2420] flex items-start gap-3"><span className="text-[#C7C2B7] mt-0.5">—</span>{c}</li>
             ))}
           </ul>
-        </Section>
+        </ReportSection>
       )}
 
-      <Section icon={TrendingUp} title="Market valuation" testid="report-valuation">
-        <p className="text-lg text-slate-100 font-medium">{r.estimated_value_range || "—"}</p>
-      </Section>
+      <ReportSection title="Market valuation" testid="report-valuation">
+        <p className="font-serif text-2xl text-[#2A2420]">{r.estimated_value_range || "—"}</p>
+      </ReportSection>
 
       {r.condition_notes?.length > 0 && (
-        <Section icon={Wrench} title="Condition notes" testid="report-condition">
-          <ul className="space-y-2">
+        <ReportSection title="Condition" testid="report-condition">
+          <ul className="space-y-2.5">
             {r.condition_notes.map((c, i) => (
-              <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-slate-500 mt-0.5">•</span>{c}</li>
+              <li key={i} className="text-[14px] text-[#2A2420] flex items-start gap-3"><span className="text-[#C7C2B7] mt-0.5">—</span>{c}</li>
             ))}
           </ul>
-        </Section>
+        </ReportSection>
       )}
 
       {r.story && (
-        <Section icon={ScrollText} title="The story" testid="report-story">
-          <p className="text-sm text-slate-300 leading-relaxed font-serif text-base">{r.story}</p>
-        </Section>
+        <ReportSection title="History" testid="report-story">
+          <p className="font-serif text-[19px] text-[#2A2420] leading-relaxed italic">{r.story}</p>
+        </ReportSection>
       )}
     </motion.div>
   );
 }
 
-function Meta({ label, value, mono }) {
+function Meta({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-slate-500 uppercase tracking-wider font-mono mb-1">{label}</div>
-      <div className={`text-slate-100 ${mono ? "font-mono text-sm" : ""}`}>{value}</div>
+      <div className="eyebrow mb-1.5">{label}</div>
+      <div className="text-[#2A2420]">{value}</div>
     </div>
   );
 }

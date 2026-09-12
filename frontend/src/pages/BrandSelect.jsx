@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import Layout from "../components/Layout";
-import { Watch, Check, Clock, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function BrandSelect() {
@@ -22,54 +22,44 @@ export default function BrandSelect() {
       const res = await api.post("/scans", { brand_id: brand.id });
       navigate(`/scan/${res.data.id}`);
     } catch (e) {
-      toast.error("Could not start identification. Please try again.");
+      toast.error("Could not start the identification. Please try again.");
       setCreating(false);
     }
   };
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto px-5 py-12">
-        <div className="mb-10 rc-fade-up">
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-300/80">Step 1 of 4</span>
-          <h1 className="mt-3 font-serif text-4xl text-slate-100">Choose the maison</h1>
-          <p className="mt-2 text-slate-400 max-w-xl">Select the brand of your watch. Omega is fully supported today — more houses are on the way.</p>
+      <div className="max-w-4xl mx-auto px-6 py-14">
+        <div className="mb-12 rc-fade-up">
+          <span className="eyebrow">Step 01 — Maison</span>
+          <h1 className="mt-4 font-serif text-4xl md:text-5xl text-[#2A2420]">Select the maison</h1>
+          <p className="mt-3 text-[14px] text-[#6B6259] max-w-md">
+            Omega is documented in full, from the 1930s onward. Other houses will follow as their references are verified.
+          </p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20"><Watch className="w-8 h-8 text-[#D4AF37] rc-spin-slow" /></div>
+          <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-[#2A2420] animate-spin" /></div>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 gap-px bg-[#E4E1DA] border border-[#E4E1DA] rounded-[4px] overflow-hidden">
             {brands.map((b) => (
               <button
                 key={b.id}
                 data-testid={`brand-card-${b.name.toLowerCase().replace(/\s+/g, "-")}`}
                 disabled={!b.active || creating}
                 onClick={() => startScan(b)}
-                className={`text-left rc-card rounded-2xl p-6 relative transition-all group ${
-                  b.active
-                    ? "hover:border-[#D4AF37]/50 hover:shadow-[0_0_25px_rgba(212,175,55,0.12)] cursor-pointer"
-                    : "opacity-70 cursor-not-allowed"
+                className={`text-left bg-white p-7 transition-colors group ${
+                  b.active ? "hover:bg-[#FAFAF8] cursor-pointer" : "opacity-60 cursor-not-allowed"
                 }`}
               >
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-serif text-2xl text-slate-100 tracking-wide">{b.name}</h3>
-                    <p className="mt-1 text-sm text-slate-400">{b.tagline}</p>
-                  </div>
-                  {b.active ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 rounded-full px-2.5 py-1">
-                      <Check className="w-3 h-3" /> Supported
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider bg-slate-800/80 text-slate-400 border border-slate-700 rounded-full px-2.5 py-1">
-                      <Clock className="w-3 h-3" /> {b.coming_soon_label || "Soon"}
-                    </span>
-                  )}
+                  <h3 className="font-serif text-3xl text-[#2A2420]">{b.name}</h3>
+                  <span className="eyebrow mt-1">{b.active ? "Documented" : b.coming_soon_label || "Soon"}</span>
                 </div>
+                <p className="mt-2 text-[13px] text-[#6B6259]">{b.tagline}</p>
                 {b.active && (
-                  <div className="mt-6 inline-flex items-center gap-2 text-sm text-[#D4AF37] group-hover:gap-3 transition-all">
-                    Begin identification <ArrowRight className="w-4 h-4" />
+                  <div className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[#2A2420] group-hover:gap-3 transition-all">
+                    Begin <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 )}
               </button>

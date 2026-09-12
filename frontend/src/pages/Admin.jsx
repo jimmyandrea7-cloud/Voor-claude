@@ -2,12 +2,21 @@ import { useEffect, useState, useCallback } from "react";
 import api from "../lib/api";
 import Layout from "../components/Layout";
 import { toast } from "sonner";
-import { Loader2, Plus, Pencil, Trash2, X, Database, Search, Settings } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, Search } from "lucide-react";
 
 const EMPTY = {
   brand_id: "", model_family: "", reference_numbers: "", serial_range_start: "", serial_range_end: "",
   production_period: "", case_material: "", movement_caliber: "", dial_variants: "", notable_history: "", source_notes: "",
 };
+
+function EField({ label, k, full, ph, form, set }) {
+  return (
+    <div className={full ? "sm:col-span-2" : ""}>
+      <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">{label}</label>
+      <input value={form[k] || ""} onChange={(e) => set(k, e.target.value)} placeholder={ph} data-testid={`entry-field-${k}`} className="field" />
+    </div>
+  );
+}
 
 export default function Admin() {
   const [brands, setBrands] = useState([]);
@@ -44,67 +53,67 @@ export default function Admin() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto px-5 py-12">
+      <div className="max-w-6xl mx-auto px-6 py-14">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
           <div>
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-300/80 inline-flex items-center gap-1.5"><Database className="w-3.5 h-3.5" /> Admin</span>
-            <h1 className="mt-2 font-serif text-4xl text-slate-100">Reference Database</h1>
-            <p className="mt-1 text-slate-400">Curate the knowledge that powers cross-referencing. Add any brand's data here.</p>
+            <span className="eyebrow">Admin</span>
+            <h1 className="mt-3 font-serif text-4xl text-[#2A2420]">Reference database</h1>
+            <p className="mt-2 text-[14px] text-[#6B6259]">The documented knowledge behind every cross-check. Any brand can be added here.</p>
           </div>
-          <button onClick={() => setEditing({ ...EMPTY, brand_id: brands[0]?.id || "" })} data-testid="add-entry-btn" className="rc-gold-btn px-5 py-3 rounded-full font-semibold inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Add Entry
+          <button onClick={() => setEditing({ ...EMPTY, brand_id: brands[0]?.id || "" })} data-testid="add-entry-btn" className="btn">
+            <Plus className="w-3.5 h-3.5" /> Add Entry
           </button>
         </div>
 
         <PriceSettings settings={settings} onSaved={load} />
 
         <div className="flex flex-wrap gap-3 mb-4 mt-8">
-          <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} data-testid="admin-brand-filter" className="bg-[#0F172A] border border-[#1E293B] rounded-lg px-4 py-2.5 text-sm text-slate-200">
+          <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} data-testid="admin-brand-filter" className="field w-auto">
             <option value="">All brands</option>
             {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <div className="flex-1 min-w-[200px] relative">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search model, reference, caliber…" data-testid="admin-search" className="w-full bg-[#0F172A] border border-[#1E293B] rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#D4AF37]/50" />
+            <Search className="w-4 h-4 text-[#A79E92] absolute left-3 top-1/2 -translate-y-1/2" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search model, reference, calibre…" data-testid="admin-search" className="field pl-9" />
           </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="w-7 h-7 text-[#D4AF37] animate-spin" /></div>
+          <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-[#2A2420] animate-spin" /></div>
         ) : (
-          <div className="rc-card rounded-2xl overflow-hidden">
+          <div className="card rounded-[4px] overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm" data-testid="reference-table">
+              <table className="w-full text-[13px]" data-testid="reference-table">
                 <thead>
-                  <tr className="text-left text-slate-500 border-b border-[#1E293B] text-xs uppercase tracking-wider font-mono">
-                    <th className="p-4">Model family</th>
-                    <th className="p-4">Brand</th>
-                    <th className="p-4">References</th>
-                    <th className="p-4">Serial range</th>
-                    <th className="p-4">Period</th>
-                    <th className="p-4">Caliber</th>
+                  <tr className="text-left text-[#6B6259] border-b border-[#E4E1DA] text-[10px] uppercase tracking-[0.14em]">
+                    <th className="p-4 font-medium">Model family</th>
+                    <th className="p-4 font-medium">Brand</th>
+                    <th className="p-4 font-medium">References</th>
+                    <th className="p-4 font-medium">Serial range</th>
+                    <th className="p-4 font-medium">Period</th>
+                    <th className="p-4 font-medium">Calibre</th>
                     <th className="p-4"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {entries.map((e) => (
-                    <tr key={e.id} className="border-b border-[#1E293B]/60 hover:bg-[#0F172A]/50" data-testid={`entry-row-${e.id}`}>
-                      <td className="p-4 text-slate-100 font-medium">{e.model_family}</td>
-                      <td className="p-4 text-slate-400">{brandName(e.brand_id)}</td>
-                      <td className="p-4 text-slate-400 font-mono text-xs">{(e.reference_numbers || []).join(", ") || "—"}</td>
-                      <td className="p-4 text-slate-400 font-mono text-xs">{e.serial_range_start || "?"}–{e.serial_range_end || "?"}</td>
-                      <td className="p-4 text-slate-400">{e.production_period || "—"}</td>
-                      <td className="p-4 text-slate-400">{e.movement_caliber || "—"}</td>
+                    <tr key={e.id} className="border-b border-[#E4E1DA] last:border-b-0 hover:bg-[#FAFAF8]" data-testid={`entry-row-${e.id}`}>
+                      <td className="p-4 text-[#2A2420] font-medium">{e.model_family}</td>
+                      <td className="p-4 text-[#6B6259]">{brandName(e.brand_id)}</td>
+                      <td className="p-4 text-[#6B6259]">{(e.reference_numbers || []).join(", ") || "—"}</td>
+                      <td className="p-4 text-[#6B6259]">{e.serial_range_start || "?"}–{e.serial_range_end || "?"}</td>
+                      <td className="p-4 text-[#6B6259]">{e.production_period || "—"}</td>
+                      <td className="p-4 text-[#6B6259]">{e.movement_caliber || "—"}</td>
                       <td className="p-4">
-                        <div className="flex gap-2 justify-end">
-                          <button onClick={() => setEditing({ ...e, reference_numbers: (e.reference_numbers || []).join(", ") })} data-testid={`edit-entry-${e.id}`} className="text-slate-400 hover:text-[#D4AF37]"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => del(e.id)} data-testid={`delete-entry-${e.id}`} className="text-slate-400 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+                        <div className="flex gap-3 justify-end">
+                          <button onClick={() => setEditing({ ...e, reference_numbers: (e.reference_numbers || []).join(", ") })} data-testid={`edit-entry-${e.id}`} className="text-[#6B6259] hover:text-[#2A2420]"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => del(e.id)} data-testid={`delete-entry-${e.id}`} className="text-[#6B6259] hover:text-[#2A2420]"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
                   ))}
                   {entries.length === 0 && (
-                    <tr><td colSpan={7} className="p-8 text-center text-slate-500">No entries found.</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-[#A79E92]">No entries found.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -136,22 +145,13 @@ function PriceSettings({ settings, onSaved }) {
   };
 
   return (
-    <div className="rc-card rounded-2xl p-6" data-testid="price-settings">
-      <div className="flex items-center gap-2 mb-4"><Settings className="w-4 h-4 text-[#38BDF8]" /><h3 className="text-slate-100 font-medium">Report pricing (display)</h3></div>
-      <div className="flex flex-wrap gap-3 items-end">
-        <div><label className="block text-xs text-slate-500 mb-1">Display label</label><input value={display} onChange={(e) => setDisplay(e.target.value)} data-testid="settings-price-display" className="bg-[#0F172A] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-slate-200 w-32" /></div>
-        <div><label className="block text-xs text-slate-500 mb-1">Amount (USD)</label><input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} data-testid="settings-price-amount" className="bg-[#0F172A] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-slate-200 w-28" /></div>
-        <button onClick={save} disabled={saving} data-testid="save-settings-btn" className="rc-gold-btn px-5 py-2 rounded-full text-sm font-semibold">{saving ? "Saving…" : "Save"}</button>
+    <div className="card rounded-[4px] p-6" data-testid="price-settings">
+      <span className="eyebrow">Report pricing (display)</span>
+      <div className="flex flex-wrap gap-3 items-end mt-4">
+        <div><label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Display label</label><input value={display} onChange={(e) => setDisplay(e.target.value)} data-testid="settings-price-display" className="field w-32" /></div>
+        <div><label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Amount (USD)</label><input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} data-testid="settings-price-amount" className="field w-28" /></div>
+        <button onClick={save} disabled={saving} data-testid="save-settings-btn" className="btn btn-sm">{saving ? "Saving…" : "Save"}</button>
       </div>
-    </div>
-  );
-}
-
-function EField({ label, k, full, ph, form, set }) {
-  return (
-    <div className={full ? "sm:col-span-2" : ""}>
-      <label className="block text-xs text-slate-500 mb-1">{label}</label>
-      <input value={form[k] || ""} onChange={(e) => set(k, e.target.value)} placeholder={ph} data-testid={`entry-field-${k}`} className="w-full bg-[#0F172A] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-[#D4AF37]/50" />
     </div>
   );
 }
@@ -177,16 +177,16 @@ function EntryModal({ entry, brands, onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#111827] border border-[#1E293B] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="entry-modal">
-        <div className="flex items-center justify-between p-5 border-b border-[#1E293B] sticky top-0 bg-[#111827]">
-          <h3 className="font-serif text-2xl text-slate-100">{isEdit ? "Edit" : "Add"} reference entry</h3>
-          <button onClick={onClose} data-testid="close-modal-btn" className="text-slate-400 hover:text-slate-100"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2A2420]/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white border border-[#E4E1DA] rounded-[4px] w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="entry-modal">
+        <div className="flex items-center justify-between p-5 border-b border-[#E4E1DA] sticky top-0 bg-white">
+          <h3 className="font-serif text-2xl text-[#2A2420]">{isEdit ? "Edit" : "Add"} reference entry</h3>
+          <button onClick={onClose} data-testid="close-modal-btn" className="text-[#6B6259] hover:text-[#2A2420]"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-5 grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Brand *</label>
-            <select value={form.brand_id} onChange={(e) => set("brand_id", e.target.value)} data-testid="entry-field-brand_id" className="w-full bg-[#0F172A] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-slate-200">
+            <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Brand *</label>
+            <select value={form.brand_id} onChange={(e) => set("brand_id", e.target.value)} data-testid="entry-field-brand_id" className="field">
               <option value="">Select brand</option>
               {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
@@ -197,21 +197,21 @@ function EntryModal({ entry, brands, onClose, onSaved }) {
           <EField form={form} set={set} label="Serial range end" k="serial_range_end" ph="30000000" />
           <EField form={form} set={set} label="Production period" k="production_period" ph="1963-1970" />
           <EField form={form} set={set} label="Case material" k="case_material" ph="Stainless steel" />
-          <EField form={form} set={set} label="Movement / caliber" k="movement_caliber" ph="Cal. 321 / 861" />
+          <EField form={form} set={set} label="Movement / calibre" k="movement_caliber" ph="Cal. 321 / 861" />
           <EField form={form} set={set} label="Dial variants" k="dial_variants" ph="Stepped dial, applied logo" />
           <div className="sm:col-span-2">
-            <label className="block text-xs text-slate-500 mb-1">Notable history / fun facts</label>
-            <textarea value={form.notable_history || ""} onChange={(e) => set("notable_history", e.target.value)} rows={2} data-testid="entry-field-notable_history" className="w-full bg-[#0F172A] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-[#D4AF37]/50" />
+            <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Notable history / fun facts</label>
+            <textarea value={form.notable_history || ""} onChange={(e) => set("notable_history", e.target.value)} rows={2} data-testid="entry-field-notable_history" className="field" />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs text-slate-500 mb-1">Source / citation notes</label>
-            <input value={form.source_notes || ""} onChange={(e) => set("source_notes", e.target.value)} data-testid="entry-field-source_notes" className="w-full bg-[#0F172A] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-[#D4AF37]/50" />
+            <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Source / citation notes</label>
+            <input value={form.source_notes || ""} onChange={(e) => set("source_notes", e.target.value)} data-testid="entry-field-source_notes" className="field" />
           </div>
         </div>
-        <div className="p-5 border-t border-[#1E293B] flex justify-end gap-3 sticky bottom-0 bg-[#111827]">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-full border border-[#1E293B] text-slate-300 text-sm">Cancel</button>
-          <button onClick={submit} disabled={saving} data-testid="save-entry-btn" className="rc-gold-btn px-6 py-2.5 rounded-full font-semibold text-sm inline-flex items-center gap-2">
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />} {isEdit ? "Save changes" : "Add entry"}
+        <div className="p-5 border-t border-[#E4E1DA] flex justify-end gap-3 sticky bottom-0 bg-white">
+          <button onClick={onClose} className="btn btn-outline">Cancel</button>
+          <button onClick={submit} disabled={saving} data-testid="save-entry-btn" className="btn">
+            {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} {isEdit ? "Save changes" : "Add entry"}
           </button>
         </div>
       </div>

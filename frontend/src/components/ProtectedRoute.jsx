@@ -8,9 +8,9 @@ export default function ProtectedRoute({ children, adminOnly }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#090D16]">
-        <Watch className="w-9 h-9 text-[#D4AF37] rc-spin-slow" />
-        <p className="mt-4 text-slate-500 font-mono text-xs tracking-widest uppercase">Loading…</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F2F1EE]">
+        <Watch className="w-8 h-8 text-[#2A2420] rc-spin-slow" />
+        <p className="mt-4 text-[#6B6259] text-xs tracking-[0.2em] uppercase">Loading</p>
       </div>
     );
   }
