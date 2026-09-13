@@ -12,7 +12,7 @@ const EMPTY = {
 function EField({ label, k, full, ph, form, set }) {
   return (
     <div className={full ? "sm:col-span-2" : ""}>
-      <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">{label}</label>
+      <label className="block text-xs text-[#6B5F4F] mb-1.5 uppercase tracking-[0.1em]">{label}</label>
       <input value={form[k] || ""} onChange={(e) => set(k, e.target.value)} placeholder={ph} data-testid={`entry-field-${k}`} className="field" />
     </div>
   );
@@ -57,8 +57,8 @@ export default function Admin() {
         <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
           <div>
             <span className="eyebrow">Admin</span>
-            <h1 className="mt-3 font-serif text-4xl text-[#2A2420]">Reference database</h1>
-            <p className="mt-2 text-[14px] text-[#6B6259]">The documented knowledge behind every cross-check. Any brand can be added here.</p>
+            <h1 className="mt-3 font-serif text-4xl text-[#241F1A]">Reference database</h1>
+            <p className="mt-2 text-[14px] text-[#6B5F4F]">The documented knowledge behind every cross-check. Any brand can be added here.</p>
           </div>
           <button onClick={() => setEditing({ ...EMPTY, brand_id: brands[0]?.id || "" })} data-testid="add-entry-btn" className="btn">
             <Plus className="w-3.5 h-3.5" /> Add Entry
@@ -73,19 +73,19 @@ export default function Admin() {
             {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <div className="flex-1 min-w-[200px] relative">
-            <Search className="w-4 h-4 text-[#A79E92] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#9C8F7A] absolute left-3 top-1/2 -translate-y-1/2" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search model, reference, calibre…" data-testid="admin-search" className="field pl-9" />
           </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-[#2A2420] animate-spin" /></div>
+          <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-[#241F1A] animate-spin" /></div>
         ) : (
           <div className="card rounded-[4px] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-[13px]" data-testid="reference-table">
                 <thead>
-                  <tr className="text-left text-[#6B6259] border-b border-[#E4E1DA] text-[10px] uppercase tracking-[0.14em]">
+                  <tr className="text-left text-[#6B5F4F] border-b border-[#E2D9C6] text-[10px] uppercase tracking-[0.14em]">
                     <th className="p-4 font-medium">Model family</th>
                     <th className="p-4 font-medium">Brand</th>
                     <th className="p-4 font-medium">References</th>
@@ -97,23 +97,23 @@ export default function Admin() {
                 </thead>
                 <tbody>
                   {entries.map((e) => (
-                    <tr key={e.id} className="border-b border-[#E4E1DA] last:border-b-0 hover:bg-[#FAFAF8]" data-testid={`entry-row-${e.id}`}>
-                      <td className="p-4 text-[#2A2420] font-medium">{e.model_family}</td>
-                      <td className="p-4 text-[#6B6259]">{brandName(e.brand_id)}</td>
-                      <td className="p-4 text-[#6B6259]">{(e.reference_numbers || []).join(", ") || "—"}</td>
-                      <td className="p-4 text-[#6B6259]">{e.serial_range_start || "?"}–{e.serial_range_end || "?"}</td>
-                      <td className="p-4 text-[#6B6259]">{e.production_period || "—"}</td>
-                      <td className="p-4 text-[#6B6259]">{e.movement_caliber || "—"}</td>
+                    <tr key={e.id} className="border-b border-[#E2D9C6] last:border-b-0 hover:bg-[#FBF3E2]" data-testid={`entry-row-${e.id}`}>
+                      <td className="p-4 text-[#241F1A] font-medium">{e.model_family}</td>
+                      <td className="p-4 text-[#6B5F4F]">{brandName(e.brand_id)}</td>
+                      <td className="p-4 text-[#6B5F4F]">{(e.reference_numbers || []).join(", ") || "—"}</td>
+                      <td className="p-4 text-[#6B5F4F]">{e.serial_range_start || "?"}–{e.serial_range_end || "?"}</td>
+                      <td className="p-4 text-[#6B5F4F]">{e.production_period || "—"}</td>
+                      <td className="p-4 text-[#6B5F4F]">{e.movement_caliber || "—"}</td>
                       <td className="p-4">
                         <div className="flex gap-3 justify-end">
-                          <button onClick={() => setEditing({ ...e, reference_numbers: (e.reference_numbers || []).join(", ") })} data-testid={`edit-entry-${e.id}`} className="text-[#6B6259] hover:text-[#2A2420]"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => del(e.id)} data-testid={`delete-entry-${e.id}`} className="text-[#6B6259] hover:text-[#2A2420]"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => setEditing({ ...e, reference_numbers: (e.reference_numbers || []).join(", ") })} data-testid={`edit-entry-${e.id}`} className="text-[#6B5F4F] hover:text-[#241F1A]"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => del(e.id)} data-testid={`delete-entry-${e.id}`} className="text-[#6B5F4F] hover:text-[#241F1A]"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
                   ))}
                   {entries.length === 0 && (
-                    <tr><td colSpan={7} className="p-8 text-center text-[#A79E92]">No entries found.</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-[#9C8F7A]">No entries found.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -148,8 +148,8 @@ function PriceSettings({ settings, onSaved }) {
     <div className="card rounded-[4px] p-6" data-testid="price-settings">
       <span className="eyebrow">Report pricing (display)</span>
       <div className="flex flex-wrap gap-3 items-end mt-4">
-        <div><label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Display label</label><input value={display} onChange={(e) => setDisplay(e.target.value)} data-testid="settings-price-display" className="field w-32" /></div>
-        <div><label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Amount (USD)</label><input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} data-testid="settings-price-amount" className="field w-28" /></div>
+        <div><label className="block text-xs text-[#6B5F4F] mb-1.5 uppercase tracking-[0.1em]">Display label</label><input value={display} onChange={(e) => setDisplay(e.target.value)} data-testid="settings-price-display" className="field w-32" /></div>
+        <div><label className="block text-xs text-[#6B5F4F] mb-1.5 uppercase tracking-[0.1em]">Amount (USD)</label><input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} data-testid="settings-price-amount" className="field w-28" /></div>
         <button onClick={save} disabled={saving} data-testid="save-settings-btn" className="btn btn-sm">{saving ? "Saving…" : "Save"}</button>
       </div>
     </div>
@@ -177,15 +177,15 @@ function EntryModal({ entry, brands, onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2A2420]/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white border border-[#E4E1DA] rounded-[4px] w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="entry-modal">
-        <div className="flex items-center justify-between p-5 border-b border-[#E4E1DA] sticky top-0 bg-white">
-          <h3 className="font-serif text-2xl text-[#2A2420]">{isEdit ? "Edit" : "Add"} reference entry</h3>
-          <button onClick={onClose} data-testid="close-modal-btn" className="text-[#6B6259] hover:text-[#2A2420]"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#241F1A]/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-[#FFFCF5] border border-[#E2D9C6] rounded-[4px] w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="entry-modal">
+        <div className="flex items-center justify-between p-5 border-b border-[#E2D9C6] sticky top-0 bg-[#FFFCF5]">
+          <h3 className="font-serif text-2xl text-[#241F1A]">{isEdit ? "Edit" : "Add"} reference entry</h3>
+          <button onClick={onClose} data-testid="close-modal-btn" className="text-[#6B5F4F] hover:text-[#241F1A]"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-5 grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Brand *</label>
+            <label className="block text-xs text-[#6B5F4F] mb-1.5 uppercase tracking-[0.1em]">Brand *</label>
             <select value={form.brand_id} onChange={(e) => set("brand_id", e.target.value)} data-testid="entry-field-brand_id" className="field">
               <option value="">Select brand</option>
               {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -200,15 +200,15 @@ function EntryModal({ entry, brands, onClose, onSaved }) {
           <EField form={form} set={set} label="Movement / calibre" k="movement_caliber" ph="Cal. 321 / 861" />
           <EField form={form} set={set} label="Dial variants" k="dial_variants" ph="Stepped dial, applied logo" />
           <div className="sm:col-span-2">
-            <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Notable history / fun facts</label>
+            <label className="block text-xs text-[#6B5F4F] mb-1.5 uppercase tracking-[0.1em]">Notable history / fun facts</label>
             <textarea value={form.notable_history || ""} onChange={(e) => set("notable_history", e.target.value)} rows={2} data-testid="entry-field-notable_history" className="field" />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs text-[#6B6259] mb-1.5 uppercase tracking-[0.1em]">Source / citation notes</label>
+            <label className="block text-xs text-[#6B5F4F] mb-1.5 uppercase tracking-[0.1em]">Source / citation notes</label>
             <input value={form.source_notes || ""} onChange={(e) => set("source_notes", e.target.value)} data-testid="entry-field-source_notes" className="field" />
           </div>
         </div>
-        <div className="p-5 border-t border-[#E4E1DA] flex justify-end gap-3 sticky bottom-0 bg-white">
+        <div className="p-5 border-t border-[#E2D9C6] flex justify-end gap-3 sticky bottom-0 bg-[#FFFCF5]">
           <button onClick={onClose} className="btn btn-outline">Cancel</button>
           <button onClick={submit} disabled={saving} data-testid="save-entry-btn" className="btn">
             {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} {isEdit ? "Save changes" : "Add entry"}

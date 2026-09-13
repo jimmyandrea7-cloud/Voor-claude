@@ -95,23 +95,23 @@ export default function ScanWizard() {
     }
   };
 
-  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#2A2420] animate-spin" /></div></Layout>;
+  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#241F1A] animate-spin" /></div></Layout>;
 
   if (analyzing) {
     return (
       <Layout>
         <div className="max-w-md mx-auto px-6 py-24">
-          <div className="w-12 h-12 rounded-full border-2 border-[#E4E1DA] border-t-[#2A2420] rc-spin-slow" />
-          <h2 className="mt-8 font-serif text-3xl text-[#2A2420]">Under examination</h2>
+          <div className="w-12 h-12 rounded-full border-2 border-[#E2D9C6] border-t-[#241F1A] rc-spin-slow" />
+          <h2 className="mt-8 font-serif text-3xl text-[#241F1A]">Under examination</h2>
           <div className="mt-8 space-y-3.5">
             {STAGES.map((s, i) => (
-              <div key={s} data-testid={`analysis-stage-${i}`} className={`flex items-center gap-3 text-[13px] transition-colors ${i <= stageIdx ? "text-[#2A2420]" : "text-[#B8B0A4]"}`}>
-                {i < stageIdx ? <Check className="w-4 h-4" /> : i === stageIdx ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border border-[#D8D3C8]" />}
+              <div key={s} data-testid={`analysis-stage-${i}`} className={`flex items-center gap-3 text-[13px] transition-colors ${i <= stageIdx ? "text-[#241F1A]" : "text-[#B0A186]"}`}>
+                {i < stageIdx ? <Check className="w-4 h-4" /> : i === stageIdx ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border border-[#DDD0B4]" />}
                 {s}
               </div>
             ))}
           </div>
-          <p className="mt-10 text-xs text-[#A79E92]">This can take up to a minute. Please keep this page open.</p>
+          <p className="mt-10 text-xs text-[#9C8F7A]">This can take up to a minute. Please keep this page open.</p>
         </div>
       </Layout>
     );
@@ -124,39 +124,39 @@ export default function ScanWizard() {
           <>
             <div className="mb-9 rc-fade-up">
               <span className="eyebrow">Step 02 — Photographs</span>
-              <h1 className="mt-4 font-serif text-4xl text-[#2A2420]">The record</h1>
-              <p className="mt-3 text-[14px] text-[#6B6259]">Four angles are required. Each additional photograph sharpens the result.</p>
+              <h1 className="mt-4 font-serif text-4xl text-[#241F1A]">The record</h1>
+              <p className="mt-3 text-[14px] text-[#6B5F4F]">Four angles are required. Each additional photograph sharpens the result.</p>
               <div className="mt-5 flex items-center gap-3">
-                <div className="flex-1 h-px bg-[#E4E1DA] relative">
-                  <div className="absolute left-0 top-0 h-px bg-[#2A2420] transition-all" style={{ width: `${(uploadedCount / PHOTO_SLOTS.length) * 100}%` }} />
+                <div className="flex-1 h-px bg-[#E2D9C6] relative">
+                  <div className="absolute left-0 top-0 h-px bg-[#241F1A] transition-all" style={{ width: `${(uploadedCount / PHOTO_SLOTS.length) * 100}%` }} />
                 </div>
                 <span className="eyebrow">{uploadedCount} / {PHOTO_SLOTS.length}</span>
               </div>
             </div>
 
-            <div className="border border-[#E4E1DA] rounded-[4px] divide-y divide-[#E4E1DA] bg-white">
+            <div className="border border-[#E2D9C6] rounded-[4px] divide-y divide-[#E2D9C6] bg-[#FFFCF5]">
               {PHOTO_SLOTS.map((slot) => {
                 const has = photos[slot.id];
                 return (
                   <div key={slot.id} className="p-4 flex gap-4 items-center" data-testid={`photo-slot-${slot.id}`}>
-                    <div className="w-16 h-16 shrink-0 rounded-[3px] overflow-hidden border border-[#E4E1DA] bg-[#FAFAF8] flex items-center justify-center relative">
+                    <div className="w-16 h-16 shrink-0 rounded-[3px] overflow-hidden border border-[#E2D9C6] bg-[#FBF3E2] flex items-center justify-center relative">
                       {has ? (
                         <>
                           <img src={has.preview || `${API}/files/${has.file_id}`} alt="" className="w-full h-full object-cover" />
-                          <button onClick={() => removePhoto(slot.id)} data-testid={`remove-photo-${slot.id}`} className="absolute top-1 right-1 bg-white/90 rounded-full p-0.5 text-[#2A2420] hover:bg-white">
+                          <button onClick={() => removePhoto(slot.id)} data-testid={`remove-photo-${slot.id}`} className="absolute top-1 right-1 bg-[#FFFCF5]/90 rounded-full p-0.5 text-[#241F1A] hover:bg-[#FFFCF5]">
                             <X className="w-3.5 h-3.5" />
                           </button>
                         </>
                       ) : (
-                        <Camera className="w-5 h-5 text-[#C7C2B7]" />
+                        <Camera className="w-5 h-5 text-[#C9B79A]" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-[#2A2420] font-medium text-[15px]">{slot.label}</h3>
-                        {slot.required && <span className="text-[10px] uppercase tracking-[0.14em] text-[#A79E92]">Required</span>}
+                        <h3 className="text-[#241F1A] font-medium text-[15px]">{slot.label}</h3>
+                        {slot.required && <span className="text-[10px] uppercase tracking-[0.14em] text-[#9C8F7A]">Required</span>}
                       </div>
-                      <p className="text-[12px] text-[#6B6259] mt-0.5 leading-relaxed">{slot.reason}</p>
+                      <p className="text-[12px] text-[#6B5F4F] mt-0.5 leading-relaxed">{slot.reason}</p>
                     </div>
                     <input ref={(el) => (fileRefs.current[slot.id] = el)} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => handleFile(slot.id, e.target.files[0])} data-testid={`file-input-${slot.id}`} />
                     <button
@@ -173,7 +173,7 @@ export default function ScanWizard() {
             </div>
 
             <div className="mt-8 flex justify-between items-center">
-              <button onClick={() => navigate("/scan")} className="text-[#6B6259] hover:text-[#2A2420] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Back</button>
+              <button onClick={() => navigate("/scan")} className="text-[#6B5F4F] hover:text-[#241F1A] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Back</button>
               <button onClick={goDetails} disabled={!requiredDone} data-testid="photos-continue-btn" className="btn">
                 Continue <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -183,8 +183,8 @@ export default function ScanWizard() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <div className="mb-9">
               <span className="eyebrow">Step 03 — Detail</span>
-              <h1 className="mt-4 font-serif text-4xl text-[#2A2420]">What you know</h1>
-              <p className="mt-3 text-[14px] text-[#6B6259]">Optional. Anything you add narrows the identification.</p>
+              <h1 className="mt-4 font-serif text-4xl text-[#241F1A]">What you know</h1>
+              <p className="mt-3 text-[14px] text-[#6B5F4F]">Optional. Anything you add narrows the identification.</p>
             </div>
 
             <div className="space-y-6">
@@ -214,7 +214,7 @@ export default function ScanWizard() {
             </div>
 
             <div className="mt-10 flex justify-between items-center">
-              <button onClick={() => setPhase("photos")} className="text-[#6B6259] hover:text-[#2A2420] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Photographs</button>
+              <button onClick={() => setPhase("photos")} className="text-[#6B5F4F] hover:text-[#241F1A] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Photographs</button>
               <button onClick={runAnalysis} data-testid="run-analysis-btn" className="btn">
                 Identify <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -229,7 +229,7 @@ export default function ScanWizard() {
 function Field({ label, hint, children }) {
   return (
     <div>
-      <label className="block text-[13px] text-[#2A2420] mb-2 font-medium">{label} {hint && <span className="text-[#A79E92] font-normal">— {hint}</span>}</label>
+      <label className="block text-[13px] text-[#241F1A] mb-2 font-medium">{label} {hint && <span className="text-[#9C8F7A] font-normal">— {hint}</span>}</label>
       {children}
     </div>
   );

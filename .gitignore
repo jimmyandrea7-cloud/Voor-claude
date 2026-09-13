@@ -91,6 +91,9 @@ yarn_out.log
 yarn_err.log
 backend/uploads/
 .env
+
+# Design exploration — generated canvas file embeds a ~2.5MB editor payload, not worth versioning
+design/**/refcheck-landing-directions.html
 .env.*
 *.env
 !.env.example

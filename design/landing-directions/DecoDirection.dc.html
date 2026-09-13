@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prata&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    .rc-dc * { box-sizing: border-box; }
+    .rc-dc a { color: #D4AF37; text-decoration: none; border-bottom: 1px solid rgba(212,175,55,0.5); }
+    .rc-dc a:hover { color: #F2ECD8; }
+    .rc-dc-jost { font-family: 'Jost', sans-serif; }
+    .rc-dc-btn:hover { background: rgba(212,175,55,0.12); }
+  </style>
+</helmet>
+
+<div class="rc-dc" style="width:1440px;height:900px;position:relative;overflow:hidden;background:#0E0E0E;font-family:'Prata',serif;color:#F2ECD8;">
+
+  <!-- sunburst -->
+  <svg width="1440" height="900" style="position:absolute;inset:0;" viewBox="0 0 1440 900">
+    <g stroke="rgba(212,175,55,0.14)" stroke-width="1">
+      <line x1="1320" y1="-40" x2="700" y2="900"/>
+      <line x1="1320" y1="-40" x2="850" y2="900"/>
+      <line x1="1320" y1="-40" x2="1000" y2="900"/>
+      <line x1="1320" y1="-40" x2="1150" y2="900"/>
+      <line x1="1320" y1="-40" x2="1300" y2="900"/>
+      <line x1="1320" y1="-40" x2="1440" y2="700"/>
+      <line x1="1320" y1="-40" x2="1440" y2="500"/>
+      <line x1="1320" y1="-40" x2="1440" y2="300"/>
+    </g>
+  </svg>
+
+  <!-- stepped corner marks -->
+  <svg width="1440" height="900" style="position:absolute;inset:0;" viewBox="0 0 1440 900">
+    <g stroke="#D4AF37" stroke-width="1.5" fill="none">
+      <path d="M60,90 h20 v-20 h20"/>
+      <path d="M1380,90 h-20 v-20 h-20"/>
+      <path d="M60,810 h20 v20 h20"/>
+      <path d="M1380,810 h-20 v20 h-20"/>
+    </g>
+  </svg>
+
+  <div class="rc-dc-jost" style="position:absolute;left:96px;top:112px;font-size:12px;letter-spacing:0.32em;color:#D4AF37;text-transform:uppercase;">
+    Vintage Omega — Est. Identification
+  </div>
+
+  <div style="position:absolute;left:96px;top:168px;width:600px;">
+    <h1 style="margin:0;font-weight:400;font-size:60px;line-height:1.18;letter-spacing:0.01em;color:#F6F1E4;">
+      Know your Omega.<br/>Down to the caliber.
+    </h1>
+    <div style="width:64px;height:1px;background:#D4AF37;margin:28px 0;"></div>
+    <p class="rc-dc-jost" style="margin:0;font-size:15px;line-height:1.8;color:#B8AF95;max-width:440px;font-weight:400;">
+      Photograph the case, dial and movement. We cross-reference each detail against a documented archive of vintage references and return your identification, confidence scored.
+    </p>
+
+    <div style="margin-top:42px;display:flex;align-items:center;gap:26px;">
+      <div class="rc-dc-btn rc-dc-jost" style="display:flex;align-items:center;gap:12px;border:1px solid #D4AF37;color:#F2ECD8;padding:15px 28px;">
+        <span style="font-size:11.5px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;">Begin Identification</span>
+        <svg width="9" height="9" viewBox="0 0 9 9"><path d="M4.5,0 L9,4.5 L4.5,9 L0,4.5 Z" fill="#D4AF37"/></svg>
+      </div>
+      <a href="#" class="rc-dc-jost" style="font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;">Continue with Google</a>
+    </div>
+  </div>
+
+  <!-- deco watch face -->
+  <svg width="560" height="560" style="position:absolute;right:110px;top:170px;" viewBox="0 0 560 560">
+    <!-- ziggurat frame -->
+    <g stroke="#D4AF37" fill="none">
+      <rect x="20" y="20" width="520" height="520" stroke-width="1"/>
+      <path d="M20,60 h-6 M20,60 v-6" stroke-width="1.5"/>
+      <rect x="46" y="46" width="468" height="468" stroke-width="1" opacity="0.6"/>
+    </g>
+
+    <!-- sunburst behind face -->
+    <g stroke="rgba(212,175,55,0.3)" stroke-width="1">
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(0 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(30 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(60 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(90 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(120 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(150 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(180 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(210 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(240 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(270 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(300 280 280)"/>
+      <line x1="280" y1="280" x2="280" y2="70" transform="rotate(330 280 280)"/>
+    </g>
+
+    <!-- watch face -->
+    <circle cx="280" cy="280" r="150" fill="#0E0E0E" stroke="#D4AF37" stroke-width="2"/>
+    <circle cx="280" cy="280" r="132" fill="none" stroke="rgba(212,175,55,0.4)" stroke-width="1"/>
+
+    <!-- deco diamond indices -->
+    <g fill="#D4AF37">
+      <path d="M280,146 l7,14 -7,14 -7,-14 Z"/>
+      <path d="M280,414 l7,14 -7,14 -7,-14 Z" transform="translate(0,-282)"/>
+      <path d="M146,280 l14,7 -14,7 -14,-7 Z"/>
+      <path d="M414,280 l14,7 -14,7 -14,-7 Z"/>
+    </g>
+
+    <!-- hands -->
+    <line x1="280" y1="280" x2="280" y2="190" stroke="#F2ECD8" stroke-width="3" stroke-linecap="round"/>
+    <line x1="280" y1="280" x2="335" y2="245" stroke="#F2ECD8" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="280" cy="280" r="6" fill="#D4AF37"/>
+  </svg>
+
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

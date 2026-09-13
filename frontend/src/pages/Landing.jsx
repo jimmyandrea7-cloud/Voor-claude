@@ -23,18 +23,30 @@ export default function Landing() {
   ];
 
   return (
-    <div className="rc-grain relative">
+    <div className="rc-grain relative overflow-hidden">
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-24">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <span className="eyebrow">Vintage Omega identification</span>
-            <h1 className="mt-6 font-serif text-4xl sm:text-5xl lg:text-6xl leading-[1.04] tracking-tight text-[#2A2420]">
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-16 md:pt-32 md:pb-24 relative">
+        {/* Faint archival watermark — a real vintage Omega reference, not decoration for its own sake */}
+        <div
+          aria-hidden="true"
+          className="hidden lg:block font-serif absolute select-none pointer-events-none"
+          style={{ right: "-40px", top: "-64px", fontSize: 220, color: "rgba(36,31,26,0.035)", fontWeight: 500, letterSpacing: "-0.02em" }}
+        >
+          N&deg;145.022
+        </div>
+
+        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-14 lg:gap-16 items-center relative">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="relative z-10">
+            <div className="flex items-center gap-3">
+              <span className="eyebrow">Vintage Omega identification</span>
+              <span className="ref-tag hidden sm:inline">N&deg; 145.022</span>
+            </div>
+            <h1 className="mt-6 font-serif text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#241F1A]">
               Not a hunch.
               <br />
-              <span className="italic text-[#6B6259]">A documented identification.</span>
+              <span className="italic" style={{ color: "var(--accent)" }}>A documented identification.</span>
             </h1>
-            <p className="mt-7 text-[15px] text-[#6B6259] leading-relaxed max-w-md">
+            <p className="mt-7 text-[15px] text-[#6B5F4F] leading-relaxed max-w-md">
               Photograph the watch you inherited and we compare it, detail by detail, against verified Omega
               reference data — serial ranges, calibre numbers and dial variants — then tell you what it is and
               precisely how sure we are.
@@ -52,18 +64,32 @@ export default function Landing() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.1 }} className="relative">
-            <div className="card rounded-[4px] p-2.5">
-              <img src={HERO} alt="A vintage wristwatch resting on a pale surface" className="w-full h-[300px] lg:h-[440px] object-cover rounded-[2px]" />
+            {/* mounting frame, offset behind the plate like a matted print */}
+            <div className="absolute border border-[#D6CAB0]" style={{ inset: "18px -18px -18px 18px" }} aria-hidden="true" />
+
+            <div
+              className="relative overflow-hidden"
+              style={{ clipPath: "polygon(0 0, 100% 0, 100% 88%, 88% 100%, 0 100%)" }}
+            >
+              <img src={HERO} alt="A vintage wristwatch resting on a pale surface" className="w-full h-[320px] lg:h-[460px] object-cover" />
+              <div className="absolute inset-0 rc-halftone" />
+              <div
+                className="absolute inset-0"
+                style={{ background: "linear-gradient(150deg, rgba(193,68,14,0.38), rgba(36,31,26,0.5))", mixBlendMode: "multiply" }}
+              />
             </div>
-            <p className="eyebrow mt-3 text-right">Plate 01 — subject under examination</p>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="ref-tag">Plate 01</span>
+              <span className="eyebrow">Subject under examination</span>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Steps */}
-      <section className="border-y border-[#E4E1DA] bg-[#FAFAF8] relative z-10">
+      <section className="border-y border-[#E2D9C6] bg-[#FBF3E2] relative z-10">
         <div className="max-w-6xl mx-auto px-6 py-16 md:py-20">
-          <div className="grid md:grid-cols-3 gap-px bg-[#E4E1DA] border border-[#E4E1DA] rounded-[4px] overflow-hidden">
+          <div className="grid md:grid-cols-3 gap-px bg-[#E2D9C6] border border-[#E2D9C6] rounded-[4px] overflow-hidden">
             {steps.map((s, i) => (
               <motion.div
                 key={s.title}
@@ -71,11 +97,11 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="bg-[#FAFAF8] p-8"
+                className="bg-[#FBF3E2] p-8"
               >
-                <div className="font-serif text-3xl text-[#C7C2B7]">{s.n}</div>
-                <h3 className="mt-4 font-serif text-2xl text-[#2A2420]">{s.title}</h3>
-                <p className="mt-2 text-[13px] text-[#6B6259] leading-relaxed">{s.text}</p>
+                <div className="font-serif text-3xl italic" style={{ color: "var(--accent)" }}>{s.n}</div>
+                <h3 className="mt-4 font-serif text-2xl text-[#241F1A]">{s.title}</h3>
+                <p className="mt-2 text-[13px] text-[#6B5F4F] leading-relaxed">{s.text}</p>
               </motion.div>
             ))}
           </div>
@@ -85,23 +111,24 @@ export default function Landing() {
       {/* Trust band */}
       <section className="max-w-6xl mx-auto px-6 py-16 md:py-24 relative z-10">
         <div className="grid md:grid-cols-3 gap-10 md:gap-12">
-          {trust.map((f) => (
-            <div key={f.t} className="border-t border-[#2A2420] pt-5">
-              <h4 className="font-serif text-xl text-[#2A2420] mb-2">{f.t}</h4>
-              <p className="text-[13px] text-[#6B6259] leading-relaxed">{f.d}</p>
+          {trust.map((f, i) => (
+            <div key={f.t} className="border-t border-[#241F1A] pt-5">
+              <span className="ref-tag">{String(i + 1).padStart(2, "0")}</span>
+              <h4 className="mt-2 font-serif text-xl text-[#241F1A] mb-2">{f.t}</h4>
+              <p className="text-[13px] text-[#6B5F4F] leading-relaxed">{f.d}</p>
             </div>
           ))}
         </div>
         <div className="mt-14 max-w-2xl"><Disclaimer /></div>
       </section>
 
-      <footer className="border-t border-[#E4E1DA] bg-[#F2F1EE] relative z-10">
-        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-[#A79E92] tracking-wide">
+      <footer className="border-t border-[#E2D9C6] bg-[#F3EEE3] relative z-10">
+        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-[#9C8F7A] tracking-wide">
           <p>© 2026 RefCheck — Horological identification, documented.</p>
           <span className="hidden sm:inline">·</span>
           <div className="flex items-center gap-4">
-            <Link to="/privacy" className="hover:text-[#2A2420] transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-[#2A2420] transition-colors">Terms & Conditions</Link>
+            <Link to="/privacy" className="hover:text-[#241F1A] transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-[#241F1A] transition-colors">Terms & Conditions</Link>
           </div>
         </div>
       </footer>

@@ -1,0 +1,27 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "title": "A — Engineering Blueprint", "page": "round-1" },
+    { "file": "WorkshopDirection.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "title": "B — Watchmaker's Bench", "page": "round-1" },
+    { "file": "ArchiveDirection.dc.html", "x": 3120, "y": 0, "w": 1440, "h": 900, "title": "C — The Case File", "page": "round-1" },
+    { "file": "DecoDirection.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "title": "D — 1930s Deco Catalogue", "page": "round-2" },
+    { "file": "ManualDirection.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "title": "E — Service Manual Exploded View", "page": "round-2" },
+    { "file": "GaugeDirection.dc.html", "x": 3120, "y": 0, "w": 1440, "h": 900, "title": "F — Instrument Gauge", "page": "round-2" },
+    { "file": "PopDirection.dc.html", "x": 4680, "y": 0, "w": 1440, "h": 900, "title": "G — Pale & Pop (from your reference)", "page": "round-2" }
+  ],
+  "annotations": [
+    { "id": "note-intro", "x": 0, "y": -140, "w": 1200, "text": "Round 1 — three vintage-watch personalities for the RefCheck hero. Flip to Round 2 for three more.", "page": "round-1" },
+    { "id": "note-a", "x": 0, "y": 940, "w": 1440, "text": "A — Engineering Blueprint: cyanotype-blue technical drawing of a watch movement, leader lines, a real engineering title block. Leans hardest into the mechanical-engineering angle.", "page": "round-1" },
+    { "id": "note-b", "x": 1560, "y": 940, "w": 1440, "text": "B — Watchmaker's Bench: warm dark walnut felt tray with loupe, tweezers, an open pocket watch. Tactile and crafted rather than diagrammatic.", "page": "round-1" },
+    { "id": "note-c", "x": 3120, "y": 940, "w": 1440, "text": "C — The Case File: parchment dossier with a tilted photo exhibit, a paperclip, and a red 'DOCUMENTED' stamp. Narrative and forensic.", "page": "round-1" },
+    { "id": "note-intro-2", "x": 0, "y": -140, "w": 1200, "text": "Round 2 — three more directions, further from the first set: a period-accurate 1930s deco catalogue, a repair-manual exploded view, and a stark instrument gauge.", "page": "round-2" },
+    { "id": "note-d", "x": 0, "y": 940, "w": 1440, "text": "D — 1930s Deco Catalogue: black and gold, sunburst rays, a stepped ziggurat frame around a deco watch face. Period-accurate to the actual watches, not generic luxury.", "page": "round-2" },
+    { "id": "note-e", "x": 1560, "y": 940, "w": 1440, "text": "E — Service Manual Exploded View: aged manila paper, an isometric exploded stack of watch parts with a numbered parts list, like a real repair manual page.", "page": "round-2" },
+    { "id": "note-f", "x": 3120, "y": 940, "w": 1440, "text": "F — Instrument Gauge: stark black/white/red, oversized industrial type, a chronometer-style confidence gauge with a needle — ties directly to the app's real confidence score.", "page": "round-2" },
+    { "id": "note-g", "x": 4680, "y": 940, "w": 1440, "text": "G — Pale & Pop, refined: asymmetric composition, a torn/taped photo bleeding off the frame with halftone texture, a hand-drawn circle around the CTA, a handwritten note, a faint giant watermark of a real vintage Omega reference number, vertical running text. Fewer template tells, more designer fingerprints.", "page": "round-2" }
+  ],
+  "pages": [
+    { "id": "round-1", "name": "Round 1 — A, B, C" },
+    { "id": "round-2", "name": "Round 2 — D, E, F" }
+  ],
+  "launch": { "view": "canvas", "page": "round-2" }
+}

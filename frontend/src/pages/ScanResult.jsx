@@ -30,7 +30,7 @@ export default function ScanResult() {
     }
   };
 
-  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#2A2420] animate-spin" /></div></Layout>;
+  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#241F1A] animate-spin" /></div></Layout>;
 
   const r = scan.result || {};
   const conf = r.confidence_percentage ?? 0;
@@ -40,15 +40,15 @@ export default function ScanResult() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto px-6 py-12">
-        <button onClick={() => navigate("/dashboard")} className="text-[#6B6259] hover:text-[#2A2420] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] mb-8"><ArrowLeft className="w-3.5 h-3.5" /> Collection</button>
+        <button onClick={() => navigate("/dashboard")} className="text-[#6B5F4F] hover:text-[#241F1A] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] mb-8"><ArrowLeft className="w-3.5 h-3.5" /> Collection</button>
 
         {/* Headline */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} data-testid="result-headline">
           <span className="eyebrow">Preliminary identification</span>
           <div className="mt-4 flex items-start justify-between gap-6 flex-wrap">
             <div className="flex-1 min-w-0">
-              <h1 className="font-serif text-4xl sm:text-5xl text-[#2A2420] leading-[1.05]" data-testid="result-model-family">{r.likely_model_family || "Undetermined"}</h1>
-              <p className="text-[13px] text-[#6B6259] mt-3">
+              <h1 className="font-serif text-4xl sm:text-5xl text-[#241F1A] leading-[1.05]" data-testid="result-model-family">{r.likely_model_family || "Undetermined"}</h1>
+              <p className="text-[13px] text-[#6B5F4F] mt-3">
                 {scan.brand_name || "Omega"} · {r.used_database_match ? "Corroborated by reference data" : "Visual reasoning only"}
               </p>
             </div>
@@ -58,22 +58,22 @@ export default function ScanResult() {
           {r.headline_highlights?.length > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">
               {r.headline_highlights.map((h, i) => (
-                <span key={i} className="text-[12px] border border-[#E4E1DA] rounded-[3px] px-3 py-1.5 text-[#6B6259] bg-white">{h}</span>
+                <span key={i} className="text-[12px] border border-[#E2D9C6] rounded-[3px] px-3 py-1.5 text-[#6B5F4F] bg-[#FFFCF5]">{h}</span>
               ))}
             </div>
           )}
 
           {lowConf && (
-            <div className="mt-6 flex items-start gap-2.5 border border-[#E4E1DA] bg-[#FAFAF8] rounded-[3px] p-4" data-testid="low-confidence-note">
-              <AlertTriangle className="w-4 h-4 text-[#6B6259] mt-0.5 shrink-0" />
-              <p className="text-[13px] text-[#6B6259] leading-relaxed">
+            <div className="mt-6 flex items-start gap-2.5 border border-[#E2D9C6] bg-[#FBF3E2] rounded-[3px] p-4" data-testid="low-confidence-note">
+              <AlertTriangle className="w-4 h-4 text-[#6B5F4F] mt-0.5 shrink-0" />
+              <p className="text-[13px] text-[#6B5F4F] leading-relaxed">
                 The evidence is thin, so this remains uncertain. {r.additional_photo_suggestion || "A sharper photograph of the serial number and case back would help most."}
               </p>
             </div>
           )}
         </motion.div>
 
-        <div className="my-9 h-px bg-[#E4E1DA]" />
+        <div className="my-9 h-px bg-[#E2D9C6]" />
 
         {scan.paid ? (
           <FullReport r={r} />
@@ -92,11 +92,11 @@ function ConfidenceRing({ value }) {
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }} data-testid="confidence-ring">
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#E4E1DA" strokeWidth={stroke} fill="none" />
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#2A2420" strokeWidth={stroke} fill="none" strokeLinecap="butt" strokeDasharray={circ} strokeDashoffset={circ - (value / 100) * circ} style={{ transition: "stroke-dashoffset 1s ease" }} />
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#E2D9C6" strokeWidth={stroke} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#241F1A" strokeWidth={stroke} fill="none" strokeLinecap="butt" strokeDasharray={circ} strokeDashoffset={circ - (value / 100) * circ} style={{ transition: "stroke-dashoffset 1s ease" }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-serif text-3xl text-[#2A2420]" data-testid="confidence-value">{value}</span>
+        <span className="font-serif text-3xl text-[#241F1A]" data-testid="confidence-value">{value}</span>
         <span className="eyebrow" style={{ fontSize: 9 }}>Confidence</span>
       </div>
     </div>
@@ -115,14 +115,14 @@ function Paywall({ priceDisplay, onUnlock, checkingOut, settings }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card rounded-[4px] p-8" data-testid="paywall-card">
       <span className="eyebrow">The full identification</span>
-      <h2 className="mt-3 font-serif text-3xl text-[#2A2420]">Read the complete report</h2>
-      <p className="mt-3 text-[14px] text-[#6B6259] max-w-md">
+      <h2 className="mt-3 font-serif text-3xl text-[#241F1A]">Read the complete report</h2>
+      <p className="mt-3 text-[14px] text-[#6B5F4F] max-w-md">
         You have the headline match. The full report sets out the reference, the era, and the reasoning behind every point — everything you would want before you insure, sell, or simply understand it.
       </p>
 
       <ul className="mt-7 grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
         {perks.map((p) => (
-          <li key={p} className="flex items-start gap-2.5 text-[13px] text-[#2A2420]"><Check className="w-4 h-4 text-[#6B6259] mt-0.5 shrink-0" />{p}</li>
+          <li key={p} className="flex items-start gap-2.5 text-[13px] text-[#241F1A]"><Check className="w-4 h-4 text-[#6B5F4F] mt-0.5 shrink-0" />{p}</li>
         ))}
       </ul>
 
@@ -131,7 +131,7 @@ function Paywall({ priceDisplay, onUnlock, checkingOut, settings }) {
           {checkingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
           Unlock the report — {priceDisplay}
         </button>
-        <p className="text-xs text-[#A79E92] max-w-[16rem]">One-time payment for this report. Secure checkout via Stripe.
+        <p className="text-xs text-[#9C8F7A] max-w-[16rem]">One-time payment for this report. Secure checkout via Stripe.
           {settings?.subscription_enabled && ` Or subscribe: ${settings.subscription_price_display}.`}
         </p>
       </div>
@@ -141,7 +141,7 @@ function Paywall({ priceDisplay, onUnlock, checkingOut, settings }) {
 
 function ReportSection({ title, children, testid }) {
   return (
-    <div className="pt-7 border-t border-[#E4E1DA]" data-testid={testid}>
+    <div className="pt-7 border-t border-[#E2D9C6]" data-testid={testid}>
       <span className="eyebrow">{title}</span>
       <div className="mt-4">{children}</div>
     </div>
@@ -165,7 +165,7 @@ function FullReport({ r }) {
         <ReportSection title="Confidence breakdown" testid="report-confidence-breakdown">
           <ul className="space-y-2.5">
             {r.confidence_breakdown.map((c, i) => (
-              <li key={i} className="text-[14px] text-[#2A2420] flex items-start gap-3"><span className="text-[#C7C2B7] mt-0.5">—</span>{c}</li>
+              <li key={i} className="text-[14px] text-[#241F1A] flex items-start gap-3"><span className="text-[#C9B79A] mt-0.5">—</span>{c}</li>
             ))}
           </ul>
         </ReportSection>
@@ -173,24 +173,24 @@ function FullReport({ r }) {
 
       {r.authenticity_signals?.length > 0 && (
         <ReportSection title="Authenticity signals" testid="report-authenticity">
-          <p className="text-[12px] text-[#A79E92] mb-3">Signals only — not a certified authentication.</p>
+          <p className="text-[12px] text-[#9C8F7A] mb-3">Signals only — not a certified authentication.</p>
           <ul className="space-y-2.5">
             {r.authenticity_signals.map((c, i) => (
-              <li key={i} className="text-[14px] text-[#2A2420] flex items-start gap-3"><span className="text-[#C7C2B7] mt-0.5">—</span>{c}</li>
+              <li key={i} className="text-[14px] text-[#241F1A] flex items-start gap-3"><span className="text-[#C9B79A] mt-0.5">—</span>{c}</li>
             ))}
           </ul>
         </ReportSection>
       )}
 
       <ReportSection title="Market valuation" testid="report-valuation">
-        <p className="font-serif text-2xl text-[#2A2420]">{r.estimated_value_range || "—"}</p>
+        <p className="font-serif text-2xl text-[#241F1A]">{r.estimated_value_range || "—"}</p>
       </ReportSection>
 
       {r.condition_notes?.length > 0 && (
         <ReportSection title="Condition" testid="report-condition">
           <ul className="space-y-2.5">
             {r.condition_notes.map((c, i) => (
-              <li key={i} className="text-[14px] text-[#2A2420] flex items-start gap-3"><span className="text-[#C7C2B7] mt-0.5">—</span>{c}</li>
+              <li key={i} className="text-[14px] text-[#241F1A] flex items-start gap-3"><span className="text-[#C9B79A] mt-0.5">—</span>{c}</li>
             ))}
           </ul>
         </ReportSection>
@@ -198,7 +198,7 @@ function FullReport({ r }) {
 
       {r.story && (
         <ReportSection title="History" testid="report-story">
-          <p className="font-serif text-[19px] text-[#2A2420] leading-relaxed italic">{r.story}</p>
+          <p className="font-serif text-[19px] text-[#241F1A] leading-relaxed italic">{r.story}</p>
         </ReportSection>
       )}
     </motion.div>
@@ -209,7 +209,7 @@ function Meta({ label, value }) {
   return (
     <div>
       <div className="eyebrow mb-1.5">{label}</div>
-      <div className="text-[#2A2420]">{value}</div>
+      <div className="text-[#241F1A]">{value}</div>
     </div>
   );
 }

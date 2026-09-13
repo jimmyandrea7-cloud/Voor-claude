@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    .rc-bp * { box-sizing: border-box; }
+    .rc-bp a { color: #D8A548; text-decoration: none; }
+    .rc-bp a:hover { color: #EFC876; }
+    .rc-bp-mono { font-family: 'IBM Plex Mono', monospace; }
+    .rc-bp-btn-primary:hover { background: #EFC876; }
+    .rc-bp-btn-outline:hover { border-color: rgba(255,255,255,0.6); color: #ffffff; }
+  </style>
+</helmet>
+
+<div class="rc-bp" style="width:1440px;height:900px;position:relative;overflow:hidden;background:#14293F;font-family:'Space Grotesk',sans-serif;color:#F1F7FC;">
+
+  <!-- blueprint grid -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);background-size:40px 40px;"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 900px 700px at 78% 15%, rgba(255,255,255,0.05), transparent 70%);"></div>
+
+  <!-- corner registration marks -->
+  <svg width="1440" height="900" style="position:absolute;inset:0;" viewBox="0 0 1440 900">
+    <g stroke="rgba(255,255,255,0.28)" stroke-width="1">
+      <path d="M24,36 H8 M16,44 V28"/>
+      <path d="M1416,36 H1432 M1424,44 V28"/>
+      <path d="M24,864 H8 M16,872 V856"/>
+      <path d="M1416,864 H1432 M1424,872 V856"/>
+    </g>
+  </svg>
+
+  <!-- eyebrow -->
+  <div class="rc-bp-mono" style="position:absolute;left:96px;top:72px;font-size:12px;letter-spacing:0.22em;color:#8FC7E8;text-transform:uppercase;border-bottom:1px solid rgba(143,199,232,0.35);padding-bottom:10px;width:420px;">
+    Fig. 1 — Identification Apparatus
+  </div>
+
+  <!-- headline block -->
+  <div style="position:absolute;left:96px;top:150px;width:560px;">
+    <h1 style="margin:0;font-weight:700;font-size:58px;line-height:1.08;letter-spacing:-0.01em;color:#F6FAFD;">
+      Every watch keeps<br/>a record. We learn<br/>to read it.
+    </h1>
+    <p style="margin:26px 0 0;font-size:16px;line-height:1.6;color:#9FB7CC;max-width:460px;">
+      Photograph a vintage Omega and we cross-reference it — case, dial, caliber, serial range — against a documented reference archive, then return a confidence-scored identification.
+    </p>
+
+    <div style="margin-top:38px;display:flex;align-items:center;gap:16px;">
+      <div class="rc-bp-btn-primary" style="display:flex;align-items:center;gap:10px;background:#D8A548;color:#14293F;padding:15px 26px;border:1px solid #14293F;">
+        <span class="rc-bp-mono" style="font-size:12px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;">Begin Identification</span>
+        <span style="font-size:15px;">→</span>
+      </div>
+      <div class="rc-bp-btn-outline" style="border:1px solid rgba(255,255,255,0.32);color:#DCE7EF;padding:14px 22px;">
+        <span class="rc-bp-mono" style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;">Continue with Google</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- technical illustration -->
+  <svg width="620" height="620" style="position:absolute;right:70px;top:118px;" viewBox="0 0 620 620">
+    <!-- case -->
+    <circle cx="330" cy="300" r="230" fill="none" stroke="rgba(169,214,240,0.4)" stroke-width="1.5"/>
+    <circle cx="330" cy="300" r="214" fill="none" stroke="rgba(169,214,240,0.22)" stroke-width="1"/>
+
+    <!-- mainspring barrel -->
+    <circle cx="230" cy="220" r="52" fill="none" stroke="#A9D6F0" stroke-width="1.6" stroke-dasharray="3 5"/>
+    <circle cx="230" cy="220" r="10" fill="none" stroke="#A9D6F0" stroke-width="1.4"/>
+    <circle cx="230" cy="220" r="2.4" fill="#D8A548"/>
+
+    <!-- gear train linkage -->
+    <line x1="278" y1="238" x2="334" y2="278" stroke="rgba(169,214,240,0.5)" stroke-width="1.2"/>
+    <circle cx="352" cy="292" r="26" fill="none" stroke="#A9D6F0" stroke-width="1.4" stroke-dasharray="2.5 4"/>
+    <circle cx="352" cy="292" r="2" fill="#D8A548"/>
+
+    <line x1="374" y1="308" x2="404" y2="352" stroke="rgba(169,214,240,0.5)" stroke-width="1.2"/>
+    <circle cx="418" cy="370" r="17" fill="none" stroke="#A9D6F0" stroke-width="1.3" stroke-dasharray="2 3.5"/>
+    <circle cx="418" cy="370" r="1.8" fill="#D8A548"/>
+
+    <!-- balance wheel -->
+    <circle cx="300" cy="430" r="70" fill="none" stroke="#A9D6F0" stroke-width="1.6"/>
+    <g stroke="rgba(169,214,240,0.55)" stroke-width="1">
+      <line x1="300" y1="366" x2="300" y2="494"/>
+      <line x1="238" y1="400" x2="362" y2="460"/>
+      <line x1="238" y1="460" x2="362" y2="400"/>
+    </g>
+    <circle cx="300" cy="430" r="4" fill="#D8A548"/>
+
+    <!-- leader: mainspring barrel -->
+    <line x1="182" y1="220" x2="112" y2="150" stroke="rgba(169,214,240,0.5)" stroke-width="1"/>
+    <circle cx="182" cy="220" r="2.5" fill="none" stroke="#A9D6F0" stroke-width="1"/>
+    <text x="20" y="146" fill="#8FC7E8" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.06em">MAINSPRING</text>
+    <text x="20" y="160" fill="#8FC7E8" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.06em">BARREL</text>
+
+    <!-- leader: escapement -->
+    <line x1="435" y1="371" x2="560" y2="330" stroke="rgba(169,214,240,0.5)" stroke-width="1"/>
+    <circle cx="435" cy="371" r="2.5" fill="none" stroke="#A9D6F0" stroke-width="1"/>
+    <text x="500" y="322" fill="#8FC7E8" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.06em">ESCAPEMENT</text>
+
+    <!-- leader: balance wheel -->
+    <line x1="365" y1="465" x2="540" y2="520" stroke="rgba(169,214,240,0.5)" stroke-width="1"/>
+    <circle cx="365" cy="465" r="2.5" fill="none" stroke="#A9D6F0" stroke-width="1"/>
+    <text x="440" y="514" fill="#8FC7E8" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.06em">BALANCE</text>
+    <text x="440" y="528" fill="#8FC7E8" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="0.06em">WHEEL</text>
+
+    <!-- dimension line -->
+    <g stroke="#8FC7E8" stroke-width="1">
+      <line x1="100" y1="560" x2="560" y2="560"/>
+      <line x1="100" y1="552" x2="100" y2="568"/>
+      <line x1="560" y1="552" x2="560" y2="568"/>
+    </g>
+    <text x="280" y="586" fill="#8FC7E8" font-family="IBM Plex Mono, monospace" font-size="12" letter-spacing="0.08em">⌀ 39.5 MM CASE</text>
+  </svg>
+
+  <!-- title block -->
+  <div class="rc-bp-mono" style="position:absolute;left:96px;bottom:44px;right:96px;display:flex;border-top:1px solid rgba(255,255,255,0.22);padding-top:14px;gap:0;font-size:10.5px;letter-spacing:0.08em;color:#7E96A8;text-transform:uppercase;">
+    <div style="flex:1.4;border-right:1px solid rgba(255,255,255,0.16);padding-right:16px;">SUBJECT<br/><span style="color:#EAF2FA;">VINTAGE OMEGA</span></div>
+    <div style="flex:1.6;border-right:1px solid rgba(255,255,255,0.16);padding:0 16px;">METHOD<br/><span style="color:#EAF2FA;">AI CROSS-REFERENCE</span></div>
+    <div style="flex:0.8;border-right:1px solid rgba(255,255,255,0.16);padding:0 16px;">SCALE<br/><span style="color:#EAF2FA;">1 : 1</span></div>
+    <div style="flex:1;border-right:1px solid rgba(255,255,255,0.16);padding:0 16px;">SHEET<br/><span style="color:#EAF2FA;">01 OF 01</span></div>
+    <div style="flex:0.7;padding-left:16px;">REV<br/><span style="color:#EAF2FA;">A</span></div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

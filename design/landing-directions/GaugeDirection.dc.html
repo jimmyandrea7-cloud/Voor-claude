@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    .rc-gg * { box-sizing: border-box; }
+    .rc-gg a { color: #F5F5F3; }
+    .rc-gg a:hover { color: #D1272B; }
+    .rc-gg-mono { font-family: 'Roboto Mono', monospace; }
+    .rc-gg-btn:hover { background: #E5E5E1; }
+  </style>
+</helmet>
+
+<div class="rc-gg" style="width:1440px;height:900px;position:relative;overflow:hidden;background:#101010;font-family:'Anton',sans-serif;color:#F5F5F3;">
+
+  <div class="rc-gg-mono" style="position:absolute;left:96px;top:80px;font-size:12px;letter-spacing:0.22em;color:#8A8A88;text-transform:uppercase;">
+    Instrument — Confidence Readout
+  </div>
+
+  <div style="position:absolute;left:96px;top:130px;width:600px;">
+    <h1 style="margin:0;font-weight:400;font-size:96px;line-height:0.98;text-transform:uppercase;letter-spacing:0;color:#FAFAF8;">
+      Measure<br/>what's real.
+    </h1>
+    <p class="rc-gg-mono" style="margin:34px 0 0;font-size:14px;line-height:1.75;color:#9A9A97;max-width:440px;font-weight:400;">
+      Photograph a vintage Omega. We cross-reference the case, dial and movement against a documented archive and return an identification with a stated confidence — not a hunch.
+    </p>
+
+    <div style="margin-top:44px;display:flex;align-items:center;gap:22px;">
+      <div class="rc-gg-btn" style="display:flex;align-items:center;gap:10px;background:#F5F5F3;color:#101010;padding:16px 28px;">
+        <span class="rc-gg-mono" style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">Begin Identification</span>
+        <span style="font-size:15px;">→</span>
+      </div>
+      <div style="border:1px solid rgba(245,245,243,0.35);color:#F5F5F3;padding:15px 22px;">
+        <span class="rc-gg-mono" style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Continue with Google</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- gauge -->
+  <svg width="560" height="560" style="position:absolute;right:110px;top:190px;" viewBox="0 0 560 560">
+    <circle cx="280" cy="280" r="220" fill="none" stroke="rgba(245,245,243,0.16)" stroke-width="1"/>
+    <circle cx="280" cy="280" r="196" fill="none" stroke="rgba(245,245,243,0.28)" stroke-width="1.5"/>
+
+    <!-- major ticks + labels 0..100 across 240deg sweep starting at -210deg -->
+    <g stroke="#F5F5F3" stroke-width="2">
+      <line x1="280" y1="84" x2="280" y2="104" transform="rotate(-120 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="104" transform="rotate(-60 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="104" transform="rotate(0 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="104" transform="rotate(60 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="104" transform="rotate(120 280 280)"/>
+    </g>
+    <g stroke="rgba(245,245,243,0.45)" stroke-width="1">
+      <line x1="280" y1="84" x2="280" y2="98" transform="rotate(-150 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="98" transform="rotate(-90 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="98" transform="rotate(-30 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="98" transform="rotate(30 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="98" transform="rotate(90 280 280)"/>
+      <line x1="280" y1="84" x2="280" y2="98" transform="rotate(150 280 280)"/>
+    </g>
+
+    <g font-family="Roboto Mono, monospace" font-size="13" fill="#8A8A88" text-anchor="middle">
+      <text x="280" y="66">0</text>
+      <text x="426" y="126">25</text>
+      <text x="480" y="286">50</text>
+      <text x="426" y="446">75</text>
+      <text x="280" y="504">100</text>
+    </g>
+
+    <!-- needle at ~82 -->
+    <g transform="rotate(78 280 280)">
+      <line x1="280" y1="280" x2="280" y2="112" stroke="#D1272B" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <circle cx="280" cy="280" r="9" fill="#F5F5F3"/>
+    <circle cx="280" cy="280" r="4" fill="#101010"/>
+
+    <text x="280" y="340" text-anchor="middle" font-family="Anton, sans-serif" font-size="40" fill="#F5F5F3">82</text>
+    <text x="280" y="366" text-anchor="middle" font-family="Roboto Mono, monospace" font-size="11" letter-spacing="0.14em" fill="#8A8A88">CONFIDENCE %</text>
+  </svg>
+
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

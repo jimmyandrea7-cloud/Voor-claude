@@ -35,16 +35,16 @@ export function PaymentSuccess() {
       <div className="max-w-md mx-auto px-6 py-28">
         {status === "checking" && (
           <>
-            <Loader2 className="w-8 h-8 text-[#2A2420] animate-spin" />
-            <h1 className="mt-7 font-serif text-4xl text-[#2A2420]">Confirming payment</h1>
-            <p className="mt-3 text-[14px] text-[#6B6259]">A moment while we unlock the report.</p>
+            <Loader2 className="w-8 h-8 text-[#241F1A] animate-spin" />
+            <h1 className="mt-7 font-serif text-4xl text-[#241F1A]">Confirming payment</h1>
+            <p className="mt-3 text-[14px] text-[#6B5F4F]">A moment while we unlock the report.</p>
           </>
         )}
         {status === "paid" && (
           <div data-testid="payment-success">
-            <div className="w-11 h-11 rounded-full border border-[#2A2420] flex items-center justify-center"><Check className="w-5 h-5 text-[#2A2420]" /></div>
-            <h1 className="mt-7 font-serif text-4xl text-[#2A2420]">Report unlocked</h1>
-            <p className="mt-3 text-[14px] text-[#6B6259]">The full identification is ready to read.</p>
+            <div className="w-11 h-11 rounded-full border border-[#241F1A] flex items-center justify-center"><Check className="w-5 h-5 text-[#241F1A]" /></div>
+            <h1 className="mt-7 font-serif text-4xl text-[#241F1A]">Report unlocked</h1>
+            <p className="mt-3 text-[14px] text-[#6B5F4F]">The full identification is ready to read.</p>
             <button onClick={() => navigate(`/report/${scanId}`)} data-testid="view-report-btn" className="btn mt-8">
               Read the report <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -52,9 +52,9 @@ export function PaymentSuccess() {
         )}
         {(status === "error" || status === "timeout") && (
           <div data-testid="payment-error">
-            <div className="w-11 h-11 rounded-full border border-[#E4E1DA] flex items-center justify-center"><X className="w-5 h-5 text-[#6B6259]" /></div>
-            <h1 className="mt-7 font-serif text-4xl text-[#2A2420]">{status === "timeout" ? "Still processing" : "Payment issue"}</h1>
-            <p className="mt-3 text-[14px] text-[#6B6259]">{status === "timeout" ? "This is taking longer than usual. Check your collection shortly." : "We couldn't confirm the payment."}</p>
+            <div className="w-11 h-11 rounded-full border border-[#E2D9C6] flex items-center justify-center"><X className="w-5 h-5 text-[#6B5F4F]" /></div>
+            <h1 className="mt-7 font-serif text-4xl text-[#241F1A]">{status === "timeout" ? "Still processing" : "Payment issue"}</h1>
+            <p className="mt-3 text-[14px] text-[#6B5F4F]">{status === "timeout" ? "This is taking longer than usual. Check your collection shortly." : "We couldn't confirm the payment."}</p>
             <Link to="/dashboard" className="btn mt-8 inline-flex">Back to collection</Link>
           </div>
         )}
@@ -67,9 +67,9 @@ export function PaymentCancel() {
   return (
     <Layout>
       <div className="max-w-md mx-auto px-6 py-28" data-testid="payment-cancel">
-        <div className="w-11 h-11 rounded-full border border-[#E4E1DA] flex items-center justify-center"><X className="w-5 h-5 text-[#6B6259]" /></div>
-        <h1 className="mt-7 font-serif text-4xl text-[#2A2420]">Checkout cancelled</h1>
-        <p className="mt-3 text-[14px] text-[#6B6259]">No charge was made. Your preliminary result is still saved.</p>
+        <div className="w-11 h-11 rounded-full border border-[#E2D9C6] flex items-center justify-center"><X className="w-5 h-5 text-[#6B5F4F]" /></div>
+        <h1 className="mt-7 font-serif text-4xl text-[#241F1A]">Checkout cancelled</h1>
+        <p className="mt-3 text-[14px] text-[#6B5F4F]">No charge was made. Your preliminary result is still saved.</p>
         <Link to="/dashboard" className="btn mt-8 inline-flex">Back to collection</Link>
       </div>
     </Layout>
