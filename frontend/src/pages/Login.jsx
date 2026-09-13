@@ -40,7 +40,19 @@ export default function Login() {
             <p className="mt-4 font-mono text-[11px]" style={{ color: ink(0.5) }}>Google sign-in. We never see your password.</p>
           </div>
         </div>
-        <div className="relative min-h-[320px] md:min-h-[520px]" style={{ background: "#9C958A" }}>
+        <div
+          className="relative min-h-[320px] md:min-h-[520px]"
+          style={{
+            background: "#9C958A",
+            backgroundImage: "repeating-linear-gradient(-45deg, rgba(36,31,26,.06) 0 1px, transparent 1px 14px)",
+          }}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center px-6" style={{ border: "1px dashed rgba(36,31,26,.35)", padding: "26px 34px" }}>
+              <div className="font-mono text-[10px] uppercase tracking-[0.14em]" style={{ color: "rgba(36,31,26,.6)" }}>Plate pending</div>
+              <div className="mt-1.5 font-serif italic text-[15px]" style={{ color: "rgba(36,31,26,.55)" }}>Workshop bench, cal. 552</div>
+            </div>
+          </div>
           <div className="absolute left-6 md:left-8 bottom-6 md:right-8 flex justify-between gap-4 font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: "#F3EEE3" }}>
             <span style={{ background: "rgba(36,31,26,.8)", padding: "6px 8px" }}>Plate II — bench, cal. 552</span>
             <span style={{ background: "rgba(36,31,26,.8)", padding: "6px 8px" }}>Archive</span>

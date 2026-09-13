@@ -116,6 +116,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 }
 .field::placeholder { color: rgba(36,31,26,.45); }
 
+/* --- Select: native dropdown chrome doesn't read well against an underline-only
+   field, so this gets an actual bordered box with a drawn chevron instead. --- */
+.select-field {
+  width: 100%;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23241F1A' stroke-width='1.4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(36,31,26,.3);
+  border-radius: 0;
+  padding: 10px 34px 10px 12px;
+  font-family: 'Schibsted Grotesk', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+}
+.select-field:focus-visible { border-color: var(--ink); }
+
 /* --- Selectable chips --- */
 .chip {
   border: 1px solid rgba(36,31,26,.3);
