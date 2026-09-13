@@ -127,7 +127,10 @@ function FullReport({ scan, r, brandName }) {
       <header className="bar" style={{ borderBottom: "var(--rule-strong)" }}>
         <span className="label">RefCheck — report {specimenNo(scan.id)}</span>
         <span className="label muted">Issued {formatDate(scan.created_at)} · v1</span>
-        <button className="label accent" style={{ background: "none", border: "none", cursor: "pointer" }} onClick={() => window.print()}>Print</button>
+        <span style={{ display: "flex", gap: 18 }}>
+          <button className="label accent" style={{ background: "none", border: "none", borderBottom: "1px solid var(--rust)", cursor: "pointer" }} onClick={() => window.print()}>Download PDF</button>
+          <button className="label muted" style={{ background: "none", border: "none", cursor: "pointer" }} onClick={() => window.print()}>Print</button>
+        </span>
       </header>
 
       <section style={{ padding: "48px 40px 36px", borderBottom: "var(--rule-strong)" }}>
@@ -176,8 +179,9 @@ function FullReport({ scan, r, brandName }) {
           <tbody>
             {(r.matched_attributes || []).map((m, i) => {
               const unresolved = /unresolved|contradicted/i.test(m.match || "");
+              const isLast = i === (r.matched_attributes || []).length - 1;
               return (
-                <tr key={i} className={unresolved ? "unresolved" : ""}>
+                <tr key={i} className={unresolved ? "unresolved" : ""} style={isLast ? { borderBottom: "var(--rule-strong)" } : undefined}>
                   <td>{m.attribute}</td>
                   <td>{m.finding}</td>
                   <td>{m.source}</td>
@@ -208,7 +212,8 @@ function FullReport({ scan, r, brandName }) {
       </div>
 
       <div className="btn-row" style={{ padding: "36px 40px 48px", borderTop: "var(--rule-strong)" }}>
-        <a className="btn btn-ink" href="/scan" style={{ minWidth: 220 }}>Identify another watch</a>
+        <button className="btn btn-ink" style={{ minWidth: 220 }} onClick={() => window.print()}>Download the PDF</button>
+        <a className="btn btn-outline" href="/scan">Identify another watch</a>
       </div>
     </>
   );
