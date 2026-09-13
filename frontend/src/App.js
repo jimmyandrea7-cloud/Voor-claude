@@ -5,9 +5,9 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import BrandSelect from "./pages/BrandSelect";
 import ScanWizard from "./pages/ScanWizard";
 import ScanResult from "./pages/ScanResult";
+import Unlock from "./pages/Unlock";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import { PaymentSuccess, PaymentCancel } from "./pages/Payment";
@@ -20,9 +20,10 @@ function AppRouter() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/scan" element={<ProtectedRoute><BrandSelect /></ProtectedRoute>} />
+      <Route path="/scan" element={<ProtectedRoute><ScanWizard /></ProtectedRoute>} />
       <Route path="/scan/:scanId" element={<ProtectedRoute><ScanWizard /></ProtectedRoute>} />
       <Route path="/report/:scanId" element={<ProtectedRoute><ScanResult /></ProtectedRoute>} />
+      <Route path="/unlock/:scanId" element={<ProtectedRoute><Unlock /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
       <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
       <Route path="/payment/cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />

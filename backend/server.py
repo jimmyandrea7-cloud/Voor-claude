@@ -143,11 +143,7 @@ class ScanPhoto(BaseModel):
 
 
 class ScanDescription(BaseModel):
-    provenance: Optional[str] = ""
-    engravings: Optional[str] = ""
-    condition: Optional[str] = "unknown"
-    box_papers: Optional[str] = "unsure"
-    caseback_numbers: Optional[str] = ""
+    notes: Optional[str] = ""  # freeform: serial number, inscriptions, family papers, anything else known
 
 
 class ScanCreate(BaseModel):
@@ -284,11 +280,11 @@ async def logout(request: Request, response: Response):
 # ============================ Settings ============================
 DEFAULT_SETTINGS = {
     "key": "app",
-    "report_price_display": "$9.99",
-    "report_price_amount": 9.99,
-    "report_currency": "usd",
+    "report_price_display": "€ 4,99",
+    "report_price_amount": 4.99,
+    "report_currency": "eur",
     "subscription_enabled": False,
-    "subscription_price_display": "$4.99/mo",
+    "subscription_price_display": "€ 4,99/mo",
     "subscription_note": "Unlimited report unlocks (coming soon)",
 }
 
@@ -490,10 +486,15 @@ async def update_scan_description(scan_id: str, payload: ScanDescription, user: 
 
 
 def free_result_view(result: Dict[str, Any]) -> Dict[str, Any]:
-    """Only expose model family + confidence for the free tier."""
+    """Preliminary (free) view: maker, family, period, confidence — no case reference,
+    calibre, serial range or the matched-attribute evidence table."""
     return {
-        "likely_model_family": result.get("likely_model_family"),
+        "maker": result.get("maker"),
+        "family": result.get("family"),
+        "estimated_period": result.get("estimated_period"),
         "confidence_percentage": result.get("confidence_percentage"),
+        "preliminary_summary": result.get("preliminary_summary"),
+        "confidence_note": result.get("confidence_note"),
         "headline_highlights": result.get("headline_highlights", []),
         "used_database_match": result.get("used_database_match", False),
         "low_confidence": result.get("confidence_percentage", 0) < 40,
@@ -503,19 +504,30 @@ def free_result_view(result: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ============================ AI Analysis ============================
+# "match" values, most to least certain: Exact | In range | Strong | Consistent | Unresolved | Contradicted
 ANALYSIS_SCHEMA_HINT = """Return ONLY valid minified JSON (no markdown fences) with EXACTLY these keys:
 {
- "likely_model_family": string,
- "likely_reference_numbers": [string],  // ranked most→least likely
- "estimated_period": string,            // e.g. "1965-1969"
- "confidence_percentage": number,       // 0-100 integer
- "confidence_breakdown": [string],      // each item like "serial matched known range: +30%"
- "authenticity_signals": [string],      // non-definitive signals, plain language
- "estimated_value_range": string,       // rough range + disclaimer this is not a formal appraisal
- "condition_notes": [string],
- "story": string,                       // 2-4 sentences of historical context
- "used_database_match": boolean,        // true if a DB serial range / reference matched
- "headline_highlights": [string],       // 2-3 short visual cues that drove the guess
+ "maker": string,                     // e.g. "Omega"
+ "family": string,                    // model family/line, e.g. "Seamaster"
+ "case_reference": string,            // e.g. "14700 SC-61", "" if unresolved
+ "calibre": string,                   // e.g. "552, automatic", "" if unresolved
+ "serial_range": string,              // e.g. "24.8M – 25.1M", "" if unresolved
+ "estimated_period": string,          // e.g. "circa 1960–1965"
+ "confidence_percentage": number,     // 0-100 integer, overall
+ "preliminary_summary": string,       // 1-2 sentences for the free result, e.g. "Omega Seamaster, early 1960s."
+ "confidence_note": string,           // short caption, e.g. "Dial and case matched. Serial confirmation outstanding."
+ "matched_attributes": [              // one row per physical attribute actually checked
+   {
+     "attribute": string,             // e.g. "Case reference", "Calibre", "Dial variant", "Crown", "Bracelet"
+     "finding": string,               // what was found, e.g. "Linen, applied indices"
+     "source": string,                // where the evidence came from, e.g. "Archival plates, 3 of 4"
+     "match": string                  // one of: Exact | In range | Strong | Consistent | Unresolved | Contradicted
+   }
+ ],
+ "reading": string,                   // 2-4 sentences: how the matched attributes together support the identification
+ "unresolved_note": string,           // 1-2 sentences on what's unresolved and why it doesn't block the identification; "" if nothing is unresolved
+ "used_database_match": boolean,      // true if a DB serial range / reference matched
+ "headline_highlights": [string],     // 2-3 short visual cues that drove the guess
  "additional_photo_suggestion": string  // if confidence < 40, what photo/detail helps most, else ""
 }"""
 
@@ -578,12 +590,7 @@ async def analyze_scan(scan_id: str, user: User = Depends(get_current_user)):
 
 PHOTOS PROVIDED (in order): {', '.join(photo_labels) or 'none'}
 
-USER DESCRIPTION:
-- Provenance/context: {d.provenance or 'n/a'}
-- Visible engravings/text: {d.engravings or 'n/a'}
-- Condition: {d.condition or 'unknown'}
-- Original box/papers: {d.box_papers or 'unsure'}
-- Numbers on caseback/dial: {d.caseback_numbers or 'n/a'}
+ANYTHING THE USER ALREADY KNOWS: {d.notes or 'n/a'}
 
 INTERNAL {brand_name.upper()} REFERENCE DATABASE (cross-reference any extracted serial/reference numbers against these):
 {ref_context}
@@ -592,8 +599,8 @@ INSTRUCTIONS:
 1. Analyze the photos for {brand_name} design language, typography, case shape, hands, dial, crown, bracelet, era-typical features.
 2. Extract any serial/reference numbers from the photos or the user's text.
 3. Cross-reference against the reference database above. If a serial range or reference number matches, weight it heavily and set used_database_match=true. If nothing matches, rely on visual reasoning and set used_database_match=false, and say so.
-4. In estimated_value_range, always include a clear disclaimer that it is not a formal appraisal.
-5. Phrase authenticity_signals as non-definitive signals, never a certified authentication.
+4. Build matched_attributes from what you can actually check against the photos and the reference data — do not invent rows for attributes you have no evidence for. Each row's "match" must honestly reflect how certain that one attribute is; a physically present but undateable/inconsistent detail (e.g. a clearly later replacement part) should be "Unresolved" or "Contradicted", not smoothed over.
+5. Never claim certified authentication — matches are evidence, not certificates.
 6. If confidence < 40, set additional_photo_suggestion to the single most useful extra photo/detail.
 
 {ANALYSIS_SCHEMA_HINT}"""
@@ -640,15 +647,18 @@ def parse_json_result(raw: str) -> Dict[str, Any]:
         data = json.loads(text)
     except Exception:
         data = {}
-    data.setdefault("likely_model_family", "Undetermined")
-    data.setdefault("likely_reference_numbers", [])
+    data.setdefault("maker", "Undetermined")
+    data.setdefault("family", "")
+    data.setdefault("case_reference", "")
+    data.setdefault("calibre", "")
+    data.setdefault("serial_range", "")
     data.setdefault("estimated_period", "Unknown")
     data.setdefault("confidence_percentage", 0)
-    data.setdefault("confidence_breakdown", [])
-    data.setdefault("authenticity_signals", [])
-    data.setdefault("estimated_value_range", "Unable to estimate. Not a formal appraisal.")
-    data.setdefault("condition_notes", [])
-    data.setdefault("story", "")
+    data.setdefault("preliminary_summary", "")
+    data.setdefault("confidence_note", "")
+    data.setdefault("matched_attributes", [])
+    data.setdefault("reading", "")
+    data.setdefault("unresolved_note", "")
     data.setdefault("used_database_match", False)
     data.setdefault("headline_highlights", [])
     data.setdefault("additional_photo_suggestion", "")
@@ -656,6 +666,13 @@ def parse_json_result(raw: str) -> Dict[str, Any]:
         data["confidence_percentage"] = int(round(float(data["confidence_percentage"])))
     except Exception:
         data["confidence_percentage"] = 0
+
+    matches = data.get("matched_attributes") or []
+    data["attribute_summary"] = {
+        "matched": sum(1 for m in matches if (m.get("match") or "").lower() not in ("unresolved", "contradicted")),
+        "unresolved": sum(1 for m in matches if (m.get("match") or "").lower() == "unresolved"),
+        "contradicted": sum(1 for m in matches if (m.get("match") or "").lower() == "contradicted"),
+    }
     return data
 
 

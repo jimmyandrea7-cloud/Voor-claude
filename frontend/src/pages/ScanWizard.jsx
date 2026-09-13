@@ -1,46 +1,51 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api, { API } from "../lib/api";
 import Layout from "../components/Layout";
 import { toast } from "sonner";
-import { Camera, Check, ArrowRight, ArrowLeft, Loader2, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { Loader2, Check, X } from "lucide-react";
+
+const ink = (a) => `rgba(36,31,26,${a})`;
 
 const PHOTO_SLOTS = [
-  { id: "dial", label: "Full dial", required: true, reason: "Straight-on. Logo, handset, indices and patina." },
-  { id: "caseback", label: "Case back", required: true, reason: "Engravings, medallions and case numbers." },
-  { id: "serial", label: "Serial / reference", required: true, reason: "Usually between the lugs or inside the case back." },
-  { id: "lug_profile", label: "Lug & case profile", required: true, reason: "Side view — polishing history and case sharpness." },
-  { id: "crown", label: "Crown", required: false, reason: "Confirms an original Ω-signed crown." },
-  { id: "movement", label: "Movement", required: false, reason: "If it opens: the calibre number dates it precisely." },
-  { id: "strap", label: "Bracelet & clasp", required: false, reason: "End-links and clasp codes confirm a period-correct bracelet." },
+  { id: "dial", label: "01 — Dial, square on", required: true },
+  { id: "caseback", label: "02 — Case back", required: true },
+  { id: "lugs_crown", label: "03 — Lugs and crown", required: true },
+  { id: "movement", label: "04 — Movement (optional)", required: false },
 ];
 
-const CONDITIONS = ["working", "not working", "unknown"];
-const BOX_PAPERS = ["yes", "no", "unsure"];
-const STAGES = ["Reading the photographs", "Extracting serial & reference marks", "Cross-checking Omega reference data", "Weighing the confidence figure"];
+const STAGES = ["Reading the photographs", "Extracting serial & reference marks", "Cross-checking the archive", "Weighing the confidence figure"];
 
 export default function ScanWizard() {
-  const { scanId } = useParams();
+  const { scanId: scanIdParam } = useParams();
   const navigate = useNavigate();
-  const [scan, setScan] = useState(null);
+  const [scanId, setScanId] = useState(scanIdParam || null);
+  const [loadingScan, setLoadingScan] = useState(!!scanIdParam);
+  const [brands, setBrands] = useState([]);
+  const [brandId, setBrandId] = useState(null);
+  const [creatingScan, setCreatingScan] = useState(false);
   const [photos, setPhotos] = useState({});
   const [uploading, setUploading] = useState(null);
-  const [phase, setPhase] = useState("photos");
+  const [notes, setNotes] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [stageIdx, setStageIdx] = useState(0);
-  const [desc, setDesc] = useState({ provenance: "", engravings: "", condition: "unknown", box_papers: "unsure", caseback_numbers: "" });
   const fileRefs = useRef({});
 
   useEffect(() => {
-    api.get(`/scans/${scanId}`).then((r) => {
-      setScan(r.data);
+    api.get("/brands").then((r) => setBrands(r.data)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!scanIdParam) return;
+    api.get(`/scans/${scanIdParam}`).then((r) => {
+      setBrandId(r.data.brand_id);
       const p = {};
       (r.data.photos || []).forEach((ph) => { p[ph.slot] = { file_id: ph.file_id }; });
       setPhotos(p);
-      if (r.data.description) setDesc((d) => ({ ...d, ...r.data.description }));
+      setNotes(r.data.description?.notes || "");
+      setLoadingScan(false);
     }).catch(() => { toast.error("Scan not found"); navigate("/scan"); });
-  }, [scanId, navigate]);
+  }, [scanIdParam, navigate]);
 
   useEffect(() => {
     if (!analyzing) return;
@@ -49,16 +54,33 @@ export default function ScanWizard() {
     return () => clearInterval(iv);
   }, [analyzing]);
 
+  const pickBrand = useCallback(async (brand) => {
+    if (!brand.active || creatingScan || scanId) return;
+    setCreatingScan(true);
+    try {
+      const res = await api.post("/scans", { brand_id: brand.id });
+      setBrandId(brand.id);
+      setScanId(res.data.id);
+      navigate(`/scan/${res.data.id}`, { replace: true });
+    } catch {
+      toast.error("Could not start the identification. Please try again.");
+    } finally {
+      setCreatingScan(false);
+    }
+  }, [creatingScan, scanId, navigate]);
+
   const handleFile = async (slot, file) => {
-    if (!file) return;
+    if (!file || !scanId) return;
     if (!/image\/(jpe?g|png|webp)/.test(file.type)) { toast.error("Please use a JPEG, PNG or WEBP image."); return; }
     setUploading(slot);
     try {
       const fd = new FormData();
       fd.append("file", file);
       const res = await api.post("/uploads", fd, { headers: { "Content-Type": "multipart/form-data" } });
-      setPhotos((p) => ({ ...p, [slot]: { file_id: res.data.file_id, preview: URL.createObjectURL(file) } }));
-      toast.success(`${PHOTO_SLOTS.find((s) => s.id === slot).label} added`);
+      const next = { ...photos, [slot]: { file_id: res.data.file_id, preview: URL.createObjectURL(file) } };
+      setPhotos(next);
+      const arr = Object.entries(next).map(([s, v]) => ({ slot: s, file_id: v.file_id, storage_path: "" }));
+      await api.put(`/scans/${scanId}/photos`, { photos: arr });
     } catch {
       toast.error("Upload failed. Try a smaller image.");
     } finally {
@@ -66,27 +88,21 @@ export default function ScanWizard() {
     }
   };
 
-  const removePhoto = (slot) => setPhotos((p) => { const n = { ...p }; delete n[slot]; return n; });
-
-  const requiredDone = PHOTO_SLOTS.filter((s) => s.required).every((s) => photos[s.id]);
-  const uploadedCount = Object.keys(photos).length;
-
-  const savePhotos = async () => {
-    const arr = Object.entries(photos).map(([slot, v]) => ({ slot, file_id: v.file_id, storage_path: "" }));
+  const removePhoto = async (slot) => {
+    const next = { ...photos };
+    delete next[slot];
+    setPhotos(next);
+    const arr = Object.entries(next).map(([s, v]) => ({ slot: s, file_id: v.file_id, storage_path: "" }));
     await api.put(`/scans/${scanId}/photos`, { photos: arr });
   };
 
-  const goDetails = async () => {
-    if (!requiredDone) { toast.error("Please add the four required photographs first."); return; }
-    await savePhotos();
-    setPhase("details");
-    window.scrollTo(0, 0);
-  };
+  const requiredDone = PHOTO_SLOTS.filter((s) => s.required).every((s) => photos[s.id]);
 
   const runAnalysis = async () => {
+    if (!requiredDone) { toast.error("Please add the three required photographs first."); return; }
     setAnalyzing(true);
     try {
-      await api.put(`/scans/${scanId}/description`, desc);
+      await api.put(`/scans/${scanId}/description`, { notes });
       await api.post(`/scans/${scanId}/analyze`);
       navigate(`/report/${scanId}`);
     } catch (e) {
@@ -95,23 +111,23 @@ export default function ScanWizard() {
     }
   };
 
-  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#241F1A] animate-spin" /></div></Layout>;
+  if (loadingScan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin" /></div></Layout>;
 
   if (analyzing) {
     return (
       <Layout>
         <div className="max-w-md mx-auto px-6 py-24">
-          <div className="w-12 h-12 rounded-full border-2 border-[#E2D9C6] border-t-[#241F1A] rc-spin-slow" />
-          <h2 className="mt-8 font-serif text-3xl text-[#241F1A]">Under examination</h2>
-          <div className="mt-8 space-y-3.5">
+          <div className="w-10 h-10 rounded-full border-2 rc-spin-slow" style={{ borderColor: ink(0.2), borderTopColor: "#241F1A" }} />
+          <h2 className="mt-7 font-serif text-3xl">Under examination</h2>
+          <div className="mt-7 space-y-3">
             {STAGES.map((s, i) => (
-              <div key={s} data-testid={`analysis-stage-${i}`} className={`flex items-center gap-3 text-[13px] transition-colors ${i <= stageIdx ? "text-[#241F1A]" : "text-[#B0A186]"}`}>
-                {i < stageIdx ? <Check className="w-4 h-4" /> : i === stageIdx ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border border-[#DDD0B4]" />}
+              <div key={s} data-testid={`analysis-stage-${i}`} className="flex items-center gap-3 text-[13px]" style={{ color: i <= stageIdx ? "#241F1A" : ink(0.4) }}>
+                {i < stageIdx ? <Check className="w-4 h-4" /> : i === stageIdx ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border" style={{ borderColor: ink(0.3) }} />}
                 {s}
               </div>
             ))}
           </div>
-          <p className="mt-10 text-xs text-[#9C8F7A]">This can take up to a minute. Please keep this page open.</p>
+          <p className="mt-9 font-mono text-xs" style={{ color: ink(0.5) }}>This can take up to a minute. Please keep this page open.</p>
         </div>
       </Layout>
     );
@@ -119,118 +135,97 @@ export default function ScanWizard() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-12">
-        {phase === "photos" ? (
-          <>
-            <div className="mb-9 rc-fade-up">
-              <span className="eyebrow">Step 02 — Photographs</span>
-              <h1 className="mt-4 font-serif text-4xl text-[#241F1A]">The record</h1>
-              <p className="mt-3 text-[14px] text-[#6B5F4F]">Four angles are required. Each additional photograph sharpens the result.</p>
-              <div className="mt-5 flex items-center gap-3">
-                <div className="flex-1 h-px bg-[#E2D9C6] relative">
-                  <div className="absolute left-0 top-0 h-px bg-[#241F1A] transition-all" style={{ width: `${(uploadedCount / PHOTO_SLOTS.length) * 100}%` }} />
-                </div>
-                <span className="eyebrow">{uploadedCount} / {PHOTO_SLOTS.length}</span>
-              </div>
-            </div>
+      <div className="flex items-center justify-between gap-4 flex-wrap px-6 md:px-10 py-3.5 font-mono text-[11px] uppercase tracking-[0.1em]" style={{ borderBottom: "2px solid #241F1A" }}>
+        <span>RefCheck — new specimen</span>
+        <span style={{ color: ink(0.5) }}>Step 01 of 03 · Photograph</span>
+        <span style={{ color: ink(0.5) }}>{scanId ? `No. ${scanId.slice(0, 8)}` : "No. pending"}</span>
+      </div>
 
-            <div className="border border-[#E2D9C6] rounded-[4px] divide-y divide-[#E2D9C6] bg-[#FFFCF5]">
-              {PHOTO_SLOTS.map((slot) => {
-                const has = photos[slot.id];
-                return (
-                  <div key={slot.id} className="p-4 flex gap-4 items-center" data-testid={`photo-slot-${slot.id}`}>
-                    <div className="w-16 h-16 shrink-0 rounded-[3px] overflow-hidden border border-[#E2D9C6] bg-[#FBF3E2] flex items-center justify-center relative">
-                      {has ? (
-                        <>
-                          <img src={has.preview || `${API}/files/${has.file_id}`} alt="" className="w-full h-full object-cover" />
-                          <button onClick={() => removePhoto(slot.id)} data-testid={`remove-photo-${slot.id}`} className="absolute top-1 right-1 bg-[#FFFCF5]/90 rounded-full p-0.5 text-[#241F1A] hover:bg-[#FFFCF5]">
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </>
-                      ) : (
-                        <Camera className="w-5 h-5 text-[#C9B79A]" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-[#241F1A] font-medium text-[15px]">{slot.label}</h3>
-                        {slot.required && <span className="text-[10px] uppercase tracking-[0.14em] text-[#9C8F7A]">Required</span>}
-                      </div>
-                      <p className="text-[12px] text-[#6B5F4F] mt-0.5 leading-relaxed">{slot.reason}</p>
-                    </div>
-                    <input ref={(el) => (fileRefs.current[slot.id] = el)} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => handleFile(slot.id, e.target.files[0])} data-testid={`file-input-${slot.id}`} />
+      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))" }}>
+        <div className="px-6 md:px-10 py-11" style={{ borderRight: "2px solid #241F1A" }}>
+          <h1 className="font-serif font-normal m-0" style={{ fontSize: 40, lineHeight: 1.08, maxWidth: "22ch" }}>Four frames. Flat light, no flash.</h1>
+          <p className="mt-4" style={{ maxWidth: "52ch", fontSize: 16, lineHeight: 1.55, color: ink(0.8) }}>
+            The dial and case back carry most of the evidence. The movement frame is optional, and raises confidence the most.
+          </p>
+
+          <div className="grid gap-[2px] mt-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", background: "#241F1A", padding: 2, opacity: scanId ? 1 : 0.4, pointerEvents: scanId ? "auto" : "none" }}>
+            {PHOTO_SLOTS.map((slot) => {
+              const has = photos[slot.id];
+              return (
+                <div key={slot.id} className="relative" style={{ background: "#9C958A", aspectRatio: "1/1" }} data-testid={`photo-slot-${slot.id}`}>
+                  {has ? (
+                    <>
+                      <img src={has.preview || `${API}/files/${has.file_id}`} alt="" className="w-full h-full object-cover" />
+                      <button onClick={() => removePhoto(slot.id)} data-testid={`remove-photo-${slot.id}`} className="absolute top-2 right-2" style={{ background: "rgba(36,31,26,.75)", padding: 4 }}>
+                        <X className="w-3.5 h-3.5" style={{ color: "#F3EEE3" }} />
+                      </button>
+                    </>
+                  ) : (
                     <button
                       onClick={() => fileRefs.current[slot.id]?.click()}
                       disabled={uploading === slot.id}
                       data-testid={`upload-btn-${slot.id}`}
-                      className={`shrink-0 ${has ? "btn btn-outline btn-sm" : "btn btn-sm"}`}
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.08em] text-center px-2"
+                      style={{ color: "#F3EEE3" }}
                     >
-                      {uploading === slot.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (has ? "Replace" : "Add")}
+                      {uploading === slot.id ? <Loader2 className="w-4 h-4 animate-spin" /> : slot.label}
                     </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-8 flex justify-between items-center">
-              <button onClick={() => navigate("/scan")} className="text-[#6B5F4F] hover:text-[#241F1A] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Back</button>
-              <button onClick={goDetails} disabled={!requiredDone} data-testid="photos-continue-btn" className="btn">
-                Continue <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </>
-        ) : (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="mb-9">
-              <span className="eyebrow">Step 03 — Detail</span>
-              <h1 className="mt-4 font-serif text-4xl text-[#241F1A]">What you know</h1>
-              <p className="mt-3 text-[14px] text-[#6B5F4F]">Optional. Anything you add narrows the identification.</p>
-            </div>
-
-            <div className="space-y-6">
-              <Field label="How the watch came to you" hint="Context only — not stored as sensitive data.">
-                <input data-testid="desc-provenance" value={desc.provenance} onChange={(e) => setDesc({ ...desc, provenance: e.target.value })} placeholder="Inherited from my grandfather" className="field" />
-              </Field>
-              <Field label="Engravings or text">
-                <textarea data-testid="desc-engravings" value={desc.engravings} onChange={(e) => setDesc({ ...desc, engravings: e.target.value })} rows={2} placeholder="On the case back, inside the caseband, on the movement…" className="field" />
-              </Field>
-              <Field label="Numbers on the case back or dial">
-                <input data-testid="desc-numbers" value={desc.caseback_numbers} onChange={(e) => setDesc({ ...desc, caseback_numbers: e.target.value })} placeholder="145.022, serial 32104xxx" className="field" />
-              </Field>
-              <Field label="Condition">
-                <div className="flex flex-wrap gap-2">
-                  {CONDITIONS.map((c) => (
-                    <button key={c} data-testid={`condition-${c.replace(/\s+/g, "-")}`} onClick={() => setDesc({ ...desc, condition: c })} className={`chip ${desc.condition === c ? "chip-active" : ""}`}>{c}</button>
-                  ))}
+                  )}
+                  <input ref={(el) => (fileRefs.current[slot.id] = el)} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => handleFile(slot.id, e.target.files[0])} data-testid={`file-input-${slot.id}`} />
                 </div>
-              </Field>
-              <Field label="Original box or papers">
-                <div className="flex flex-wrap gap-2">
-                  {BOX_PAPERS.map((c) => (
-                    <button key={c} data-testid={`boxpapers-${c}`} onClick={() => setDesc({ ...desc, box_papers: c })} className={`chip ${desc.box_papers === c ? "chip-active" : ""}`}>{c}</button>
-                  ))}
-                </div>
-              </Field>
-            </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 font-mono text-[12px] leading-[1.5]" style={{ color: ink(0.6) }}>
+            Drag a photograph onto a frame, or click it to browse. JPEG, PNG or WEBP.
+          </div>
+        </div>
 
-            <div className="mt-10 flex justify-between items-center">
-              <button onClick={() => setPhase("photos")} className="text-[#6B5F4F] hover:text-[#241F1A] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em]"><ArrowLeft className="w-3.5 h-3.5" /> Photographs</button>
-              <button onClick={runAnalysis} data-testid="run-analysis-btn" className="btn">
-                Identify <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </motion.div>
-        )}
+        <div className="px-6 md:px-10 py-11">
+          <div className="font-mono text-[11px] uppercase tracking-[0.12em]" style={{ color: ink(0.55) }}>Maker</div>
+          <div className="mt-4" style={{ borderTop: `1px solid ${ink(0.25)}` }}>
+            {brands.map((b) => {
+              const selected = brandId === b.id;
+              return (
+                <div
+                  key={b.id}
+                  onClick={() => pickBrand(b)}
+                  data-testid={`maker-row-${b.name.toLowerCase()}`}
+                  className="flex items-baseline justify-between gap-3 py-4"
+                  style={{ borderBottom: `1px solid ${ink(0.15)}`, cursor: b.active && !scanId ? "pointer" : "default", opacity: !b.active ? 0.45 : 1 }}
+                >
+                  <span className="font-serif text-[22px]">{b.name}</span>
+                  {b.active ? (
+                    <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#B8420E]">{selected ? "Selected" : (scanId ? "" : "Select")}</span>
+                  ) : (
+                    <span className="font-mono uppercase tracking-[0.1em]" style={{ fontSize: 9, border: "1px solid #241F1A", padding: "4px 6px" }}>{b.coming_soon_label || "Not yet available"}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3.5 font-mono text-[12px] leading-[1.5]" style={{ color: ink(0.6) }}>
+            Choose the maker printed on the dial. If it isn't listed as available, we can't cross-check it yet.
+          </div>
+
+          <div className="mt-9 font-mono text-[11px] uppercase tracking-[0.12em]" style={{ color: ink(0.55) }}>Anything you already know</div>
+          <input
+            data-testid="desc-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Serial number, inscription, family papers…"
+            className="field mt-3"
+            disabled={!scanId}
+          />
+
+          <button onClick={runAnalysis} disabled={!scanId || !requiredDone} data-testid="run-analysis-btn" className="btn w-full mt-8" style={{ justifyContent: "flex-start" }}>
+            Run the cross-check.
+          </button>
+          <div className="mt-3.5 font-mono text-[12px] leading-[1.5]" style={{ color: ink(0.6) }}>
+            The preliminary result is free. Nothing is charged at this step.
+          </div>
+        </div>
       </div>
     </Layout>
-  );
-}
-
-function Field({ label, hint, children }) {
-  return (
-    <div>
-      <label className="block text-[13px] text-[#241F1A] mb-2 font-medium">{label} {hint && <span className="text-[#9C8F7A] font-normal">— {hint}</span>}</label>
-      {children}
-    </div>
   );
 }

@@ -73,7 +73,7 @@ export default function Admin() {
             {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <div className="flex-1 min-w-[200px] relative">
-            <Search className="w-4 h-4 text-[#9C8F7A] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#746A56] absolute left-3 top-1/2 -translate-y-1/2" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search model, reference, calibre…" data-testid="admin-search" className="field pl-9" />
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function Admin() {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-[#241F1A] animate-spin" /></div>
         ) : (
-          <div className="card rounded-[4px] overflow-hidden">
+          <div className="card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-[13px]" data-testid="reference-table">
                 <thead>
@@ -113,7 +113,7 @@ export default function Admin() {
                     </tr>
                   ))}
                   {entries.length === 0 && (
-                    <tr><td colSpan={7} className="p-8 text-center text-[#9C8F7A]">No entries found.</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-[#746A56]">No entries found.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -145,7 +145,7 @@ function PriceSettings({ settings, onSaved }) {
   };
 
   return (
-    <div className="card rounded-[4px] p-6" data-testid="price-settings">
+    <div className="card p-6" data-testid="price-settings">
       <span className="eyebrow">Report pricing (display)</span>
       <div className="flex flex-wrap gap-3 items-end mt-4">
         <div><label className="block text-xs text-[#6B5F4F] mb-1.5 uppercase tracking-[0.1em]">Display label</label><input value={display} onChange={(e) => setDisplay(e.target.value)} data-testid="settings-price-display" className="field w-32" /></div>
@@ -178,7 +178,7 @@ function EntryModal({ entry, brands, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#241F1A]/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#FFFCF5] border border-[#E2D9C6] rounded-[4px] w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="entry-modal">
+      <div className="bg-[#FFFCF5] border border-[#E2D9C6] w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="entry-modal">
         <div className="flex items-center justify-between p-5 border-b border-[#E2D9C6] sticky top-0 bg-[#FFFCF5]">
           <h3 className="font-serif text-2xl text-[#241F1A]">{isEdit ? "Edit" : "Add"} reference entry</h3>
           <button onClick={onClose} data-testid="close-modal-btn" className="text-[#6B5F4F] hover:text-[#241F1A]"><X className="w-5 h-5" /></button>

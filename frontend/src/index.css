@@ -1,29 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=Schibsted+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Warm archive palette — parchment, ink, one confident accent */
-  --bg: #F3EEE3;
-  --surface: #FFFCF5;
-  --surface-2: #FBF3E2;
+  /* Archival documentation palette — parchment ground, one rust accent, rule-based structure */
   --ink: #241F1A;
-  --ink-2: #3A2E22;
-  --muted: #6B5F4F;
-  --muted-2: #9C8F7A;
-  --line: #E2D9C6;
-  --line-2: #D6CAB0;
-  --accent: #C1440E;
-  --accent-dark: #9A360A;
-  --accent-soft: #F0DCC9;
+  --parchment: #F3EEE3;
+  --rust: #B8420E;
+  --rust-pressed: #8F3309;
+  --photo-ground: #9C958A;
 }
 
 html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background-color: var(--bg);
+  background-color: var(--parchment);
   color: var(--ink);
   font-family: 'Schibsted Grotesk', system-ui, sans-serif;
   font-size: 14px;
@@ -35,116 +28,119 @@ body {
 .font-serif { font-family: 'Newsreader', Georgia, serif; }
 .font-mono { font-family: 'IBM Plex Mono', monospace; }
 
-::selection { background: var(--ink); color: var(--surface); }
+a { color: var(--rust); text-decoration: none; }
+a:hover { color: var(--rust-pressed); }
+
+::selection { background: rgba(184,66,14,.22); }
 
 ::-webkit-scrollbar { width: 11px; height: 11px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--line-2); }
-::-webkit-scrollbar-thumb:hover { background: var(--muted-2); }
+::-webkit-scrollbar-track { background: var(--parchment); }
+::-webkit-scrollbar-thumb { background: rgba(36,31,26,.2); }
+::-webkit-scrollbar-thumb:hover { background: rgba(36,31,26,.35); }
 
-/* --- Surfaces --- */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+  outline: 2px solid var(--rust);
+  outline-offset: 2px;
 }
 
-/* --- Eyebrow label --- */
+/* --- Surfaces: no radius, no shadow, ever --- */
+.card {
+  background: var(--parchment);
+  border: 1px solid rgba(36,31,26,.2);
+}
+
+/* --- Eyebrow / mono field label --- */
 .eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: var(--muted);
+  letter-spacing: 0.12em;
+  color: rgba(36,31,26,.55);
   font-weight: 500;
 }
 
-/* A small monospace reference tag — "REF. 01", "N° 145.022" — used sparingly as a texture element */
-.ref-tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--muted-2);
-}
-
-/* --- Buttons: near-rectangular, uppercase, letter-spaced. Primary carries the one accent color. --- */
+/* --- Buttons: flush-left label, no radius. Border widths absorb into padding so a
+   solid and an outlined button in the same row match height (15/16px solid, 13/14px + 2px border). --- */
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  background: var(--accent);
-  color: var(--surface);
-  border: 1px solid var(--accent);
-  border-radius: 3px;
-  padding: 0.8rem 1.5rem;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  background: var(--rust);
+  color: var(--parchment);
+  border: none;
+  padding: 15px 22px;
+  font-family: 'Schibsted Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background .3s ease, color .3s ease, opacity .3s ease, border-color .3s ease;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
-.btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:hover { background: var(--rust-pressed); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn-outline {
   background: transparent;
   color: var(--ink);
-  border: 1px solid var(--line-2);
+  border: 2px solid var(--ink);
+  padding: 13px 22px;
 }
-.btn-outline:hover { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.btn-outline:hover { background: var(--ink); color: var(--parchment); }
 
-.btn-sm { padding: 0.55rem 1rem; font-size: 10px; }
+.btn-ink {
+  background: var(--ink);
+  color: var(--parchment);
+  border: none;
+  padding: 15px 22px;
+}
+.btn-ink:hover { background: var(--rust); }
 
-/* --- Inputs --- */
+.btn-sm { padding: 11px 16px; font-size: 12px; }
+
+/* --- Text inputs: no box, an underline only --- */
 .field {
   width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  padding: 0.7rem 0.9rem;
-  font-size: 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--ink);
+  padding: 11px 0;
+  font-family: 'Schibsted Grotesk', sans-serif;
+  font-size: 15px;
   color: var(--ink);
-  transition: border-color .2s ease;
+  outline: none;
+  border-radius: 0;
 }
-.field::placeholder { color: var(--muted-2); }
-.field:focus { outline: none; border-color: var(--accent); }
+.field::placeholder { color: rgba(36,31,26,.45); }
 
-/* --- Selectable chips (rectangular). Active state carries the accent. --- */
+/* --- Selectable chips --- */
 .chip {
-  border: 1px solid var(--line-2);
-  border-radius: 3px;
+  border: 1px solid rgba(36,31,26,.3);
   padding: 0.5rem 1rem;
   font-size: 12px;
   letter-spacing: 0.04em;
-  color: var(--muted);
+  color: rgba(36,31,26,.65);
   background: transparent;
   cursor: pointer;
-  transition: all .2s ease;
+  transition: all .15s ease;
   text-transform: capitalize;
 }
 .chip:hover { border-color: var(--ink); color: var(--ink); }
-.chip-active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+.chip-active { background: var(--ink); color: var(--parchment); border-color: var(--ink); }
 
 /* --- Subtle paper grain --- */
+.rc-grain { position: relative; }
 .rc-grain::before {
   content: "";
-  position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: 0.025;
+  position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* --- Fine halftone texture, for photo treatments --- */
-.rc-halftone {
-  background-image: radial-gradient(rgba(36,31,26,0.55) 1px, transparent 1.2px);
-  background-size: 4px 4px;
-  mix-blend-mode: multiply;
-}
-
 @keyframes rc-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-.rc-fade-up { animation: rc-fade-up .7s cubic-bezier(.2,.7,.2,1) both; }
+.rc-fade-up { animation: rc-fade-up .5s cubic-bezier(.2,.7,.2,1) both; }
 
 @keyframes rc-spin-slow { to { transform: rotate(360deg); } }
 .rc-spin-slow { animation: rc-spin-slow 2.2s linear infinite; }
 
 @layer base {
-  * { border-color: var(--line); }
+  * { border-color: rgba(36,31,26,.2); }
 }

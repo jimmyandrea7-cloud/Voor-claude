@@ -1,215 +1,241 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../lib/api";
+import api, { API } from "../lib/api";
 import Layout, { Disclaimer } from "../components/Layout";
 import { toast } from "sonner";
-import { Loader2, Check, AlertTriangle, ArrowLeft, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+
+const ink = (a) => `rgba(36,31,26,${a})`;
+const specimenNo = (id) => (id ? id.slice(0, 8).toUpperCase() : "");
+const formatDate = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+};
 
 export default function ScanResult() {
   const { scanId } = useParams();
   const navigate = useNavigate();
   const [scan, setScan] = useState(null);
   const [settings, setSettings] = useState(null);
-  const [checkingOut, setCheckingOut] = useState(false);
+  const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-    Promise.all([api.get(`/scans/${scanId}`), api.get("/settings")])
-      .then(([s, st]) => { setScan(s.data); setSettings(st.data); })
+    Promise.all([api.get(`/scans/${scanId}`), api.get("/settings"), api.get("/brands")])
+      .then(([s, st, b]) => { setScan(s.data); setSettings(st.data); setBrands(b.data); })
       .catch(() => { toast.error("Report not found"); navigate("/dashboard"); });
   }, [scanId, navigate]);
 
-  const unlock = async () => {
-    setCheckingOut(true);
-    try {
-      const res = await api.post("/payments/checkout", { scan_id: scanId, origin_url: window.location.origin });
-      window.location.href = res.data.checkout_url;
-    } catch {
-      toast.error("Could not start checkout. Please try again.");
-      setCheckingOut(false);
-    }
-  };
-
-  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 text-[#241F1A] animate-spin" /></div></Layout>;
+  if (!scan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin" /></div></Layout>;
 
   const r = scan.result || {};
-  const conf = r.confidence_percentage ?? 0;
-  const lowConf = conf < 40;
-  const priceDisplay = settings?.report_price_display || "$9.99";
+  const brandName = brands.find((b) => b.id === scan.brand_id)?.name || "";
+  const price = settings?.report_price_display || "€ 4,99";
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-12">
-        <button onClick={() => navigate("/dashboard")} className="text-[#6B5F4F] hover:text-[#241F1A] inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] mb-8"><ArrowLeft className="w-3.5 h-3.5" /> Collection</button>
-
-        {/* Headline */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} data-testid="result-headline">
-          <span className="eyebrow">Preliminary identification</span>
-          <div className="mt-4 flex items-start justify-between gap-6 flex-wrap">
-            <div className="flex-1 min-w-0">
-              <h1 className="font-serif text-4xl sm:text-5xl text-[#241F1A] leading-[1.05]" data-testid="result-model-family">{r.likely_model_family || "Undetermined"}</h1>
-              <p className="text-[13px] text-[#6B5F4F] mt-3">
-                {scan.brand_name || "Omega"} · {r.used_database_match ? "Corroborated by reference data" : "Visual reasoning only"}
-              </p>
-            </div>
-            <ConfidenceRing value={conf} />
-          </div>
-
-          {r.headline_highlights?.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              {r.headline_highlights.map((h, i) => (
-                <span key={i} className="text-[12px] border border-[#E2D9C6] rounded-[3px] px-3 py-1.5 text-[#6B5F4F] bg-[#FFFCF5]">{h}</span>
-              ))}
-            </div>
-          )}
-
-          {lowConf && (
-            <div className="mt-6 flex items-start gap-2.5 border border-[#E2D9C6] bg-[#FBF3E2] rounded-[3px] p-4" data-testid="low-confidence-note">
-              <AlertTriangle className="w-4 h-4 text-[#6B5F4F] mt-0.5 shrink-0" />
-              <p className="text-[13px] text-[#6B5F4F] leading-relaxed">
-                The evidence is thin, so this remains uncertain. {r.additional_photo_suggestion || "A sharper photograph of the serial number and case back would help most."}
-              </p>
-            </div>
-          )}
-        </motion.div>
-
-        <div className="my-9 h-px bg-[#E2D9C6]" />
-
-        {scan.paid ? (
-          <FullReport r={r} />
-        ) : (
-          <Paywall priceDisplay={priceDisplay} onUnlock={unlock} checkingOut={checkingOut} settings={settings} />
-        )}
-
-        <div className="mt-10"><Disclaimer /></div>
-      </div>
+      {scan.paid ? <FullReport scan={scan} r={r} brandName={brandName} /> : <Preliminary scan={scan} r={r} price={price} navigate={navigate} />}
     </Layout>
   );
 }
 
-function ConfidenceRing({ value }) {
-  const size = 96, stroke = 6, radius = (size - stroke) / 2, circ = 2 * Math.PI * radius;
+function ConfidenceBar({ value, height = 14 }) {
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }} data-testid="confidence-ring">
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#E2D9C6" strokeWidth={stroke} fill="none" />
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#241F1A" strokeWidth={stroke} fill="none" strokeLinecap="butt" strokeDasharray={circ} strokeDashoffset={circ - (value / 100) * circ} style={{ transition: "stroke-dashoffset 1s ease" }} />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-serif text-3xl text-[#241F1A]" data-testid="confidence-value">{value}</span>
-        <span className="eyebrow" style={{ fontSize: 9 }}>Confidence</span>
-      </div>
+    <div style={{ height, border: `1px solid ${ink(0.3)}`, display: "flex" }}>
+      <div style={{ width: `${value}%`, background: "#B8420E" }} />
     </div>
   );
 }
 
-function Paywall({ priceDisplay, onUnlock, checkingOut, settings }) {
-  const perks = [
-    "Reference numbers, ranked, with the matching calibre",
-    "Estimated production years",
-    "Confidence breakdown — what raised and lowered it",
-    "Authenticity signals, stated as signals",
-    "Market valuation range",
-    "Condition notes and the model's history",
-  ];
-  return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card rounded-[4px] p-8" data-testid="paywall-card">
-      <span className="eyebrow">The full identification</span>
-      <h2 className="mt-3 font-serif text-3xl text-[#241F1A]">Read the complete report</h2>
-      <p className="mt-3 text-[14px] text-[#6B5F4F] max-w-md">
-        You have the headline match. The full report sets out the reference, the era, and the reasoning behind every point — everything you would want before you insure, sell, or simply understand it.
-      </p>
+function Preliminary({ scan, r, price, navigate }) {
+  const conf = r.confidence_percentage ?? 0;
+  const photoUrl = (slot) => {
+    const p = (scan.photos || []).find((p) => p.slot === slot);
+    return p ? `${API}/files/${p.file_id}` : null;
+  };
+  const thumbSlots = ["caseback", "lugs_crown", "movement"];
+  const withheld = ["Case reference", "Calibre", "Serial range and year", "Dial variant, plate by plate"];
 
-      <ul className="mt-7 grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
-        {perks.map((p) => (
-          <li key={p} className="flex items-start gap-2.5 text-[13px] text-[#241F1A]"><Check className="w-4 h-4 text-[#6B5F4F] mt-0.5 shrink-0" />{p}</li>
-        ))}
-      </ul>
-
-      <div className="mt-8 flex items-center gap-5 flex-wrap">
-        <button onClick={onUnlock} disabled={checkingOut} data-testid="unlock-report-button" className="btn">
-          {checkingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-          Unlock the report — {priceDisplay}
-        </button>
-        <p className="text-xs text-[#9C8F7A] max-w-[16rem]">One-time payment for this report. Secure checkout via Stripe.
-          {settings?.subscription_enabled && ` Or subscribe: ${settings.subscription_price_display}.`}
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
-function ReportSection({ title, children, testid }) {
-  return (
-    <div className="pt-7 border-t border-[#E2D9C6]" data-testid={testid}>
-      <span className="eyebrow">{title}</span>
-      <div className="mt-4">{children}</div>
-    </div>
-  );
-}
-
-function FullReport({ r }) {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-7" data-testid="full-report">
-      <span className="inline-flex items-center gap-1.5 eyebrow"><Check className="w-3.5 h-3.5" /> Full report</span>
-
-      <ReportSection title="Reference & era" testid="report-reference">
-        <div className="grid sm:grid-cols-2 gap-5 text-[14px]">
-          <Meta label="Likely references" value={(r.likely_reference_numbers || []).join(",  ") || "—"} />
-          <Meta label="Estimated period" value={r.estimated_period || "—"} />
-          <Meta label="Reference-data match" value={r.used_database_match ? "Corroborated by documented references" : "Not matched — visual reasoning"} />
-        </div>
-      </ReportSection>
-
-      {r.confidence_breakdown?.length > 0 && (
-        <ReportSection title="Confidence breakdown" testid="report-confidence-breakdown">
-          <ul className="space-y-2.5">
-            {r.confidence_breakdown.map((c, i) => (
-              <li key={i} className="text-[14px] text-[#241F1A] flex items-start gap-3"><span className="text-[#C9B79A] mt-0.5">—</span>{c}</li>
-            ))}
-          </ul>
-        </ReportSection>
-      )}
-
-      {r.authenticity_signals?.length > 0 && (
-        <ReportSection title="Authenticity signals" testid="report-authenticity">
-          <p className="text-[12px] text-[#9C8F7A] mb-3">Signals only — not a certified authentication.</p>
-          <ul className="space-y-2.5">
-            {r.authenticity_signals.map((c, i) => (
-              <li key={i} className="text-[14px] text-[#241F1A] flex items-start gap-3"><span className="text-[#C9B79A] mt-0.5">—</span>{c}</li>
-            ))}
-          </ul>
-        </ReportSection>
-      )}
-
-      <ReportSection title="Market valuation" testid="report-valuation">
-        <p className="font-serif text-2xl text-[#241F1A]">{r.estimated_value_range || "—"}</p>
-      </ReportSection>
-
-      {r.condition_notes?.length > 0 && (
-        <ReportSection title="Condition" testid="report-condition">
-          <ul className="space-y-2.5">
-            {r.condition_notes.map((c, i) => (
-              <li key={i} className="text-[14px] text-[#241F1A] flex items-start gap-3"><span className="text-[#C9B79A] mt-0.5">—</span>{c}</li>
-            ))}
-          </ul>
-        </ReportSection>
-      )}
-
-      {r.story && (
-        <ReportSection title="History" testid="report-story">
-          <p className="font-serif text-[19px] text-[#241F1A] leading-relaxed italic">{r.story}</p>
-        </ReportSection>
-      )}
-    </motion.div>
-  );
-}
-
-function Meta({ label, value }) {
   return (
     <div>
-      <div className="eyebrow mb-1.5">{label}</div>
-      <div className="text-[#241F1A]">{value}</div>
+      <div className="flex items-center justify-between gap-4 flex-wrap px-6 md:px-10 py-3.5 font-mono text-[11px] uppercase tracking-[0.1em]" style={{ borderBottom: "2px solid #241F1A" }}>
+        <span>RefCheck — specimen {specimenNo(scan.id)}</span>
+        <span style={{ color: ink(0.5) }}>Step 02 of 03 · Preliminary result</span>
+        <span className="text-[#B8420E]">Free</span>
+      </div>
+
+      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+        <div style={{ borderRight: "2px solid #241F1A" }}>
+          <div className="relative" style={{ aspectRatio: "4/3", background: "#9C958A", borderBottom: `1px solid ${ink(0.25)}` }}>
+            {photoUrl("dial") && <img src={photoUrl("dial")} alt="" className="w-full h-full object-cover" style={{ filter: "grayscale(1)" }} />}
+          </div>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 1, background: ink(0.25) }}>
+            {thumbSlots.map((slot) => (
+              <div key={slot} className="relative" style={{ minWidth: 0, aspectRatio: "1/1", background: "#9C958A" }}>
+                {photoUrl(slot) && <img src={photoUrl(slot)} alt="" className="w-full h-full object-cover" style={{ filter: "grayscale(1)" }} />}
+              </div>
+            ))}
+          </div>
+          <div className="px-6 md:px-8 py-4 font-mono text-[12px] leading-[1.6]" style={{ color: ink(0.62) }}>
+            Frames received {formatDate(scan.created_at)} · {(scan.photos || []).length} of 4 usable
+          </div>
+        </div>
+
+        <div className="px-6 md:px-10 py-11">
+          <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#B8420E]">Preliminary — free</div>
+          <h1 className="font-serif font-normal mt-4" style={{ fontSize: 44, lineHeight: 1.06 }} data-testid="result-model-family">
+            {r.preliminary_summary || "Analysis pending."}
+          </h1>
+          {r.headline_highlights?.length > 0 && (
+            <p className="mt-4" style={{ maxWidth: "52ch", fontSize: 16, lineHeight: 1.55, color: ink(0.8) }}>
+              {r.headline_highlights.join(" ")}
+            </p>
+          )}
+
+          <div className="flex items-baseline justify-between mt-8">
+            <div className="font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: ink(0.55) }}>Confidence</div>
+            <div className="font-serif text-[40px] leading-none text-[#B8420E]" data-testid="confidence-value">{conf}%</div>
+          </div>
+          <div className="mt-3"><ConfidenceBar value={conf} /></div>
+          <div className="mt-3 font-mono text-[12px] leading-[1.5]" style={{ color: ink(0.62) }}>{r.confidence_note}</div>
+
+          {conf < 40 && r.additional_photo_suggestion && (
+            <div className="mt-5 font-mono text-[12px] leading-[1.5] p-4" style={{ border: `1px solid ${ink(0.25)}`, color: ink(0.7) }} data-testid="low-confidence-note">
+              The evidence is thin, so this remains uncertain. {r.additional_photo_suggestion}
+            </div>
+          )}
+
+          <div className="mt-9" style={{ borderTop: "2px solid #241F1A" }}>
+            <Row label="Maker" value={r.maker} />
+            <Row label="Family" value={r.family} />
+            <Row label="Period" value={r.estimated_period} />
+            {withheld.map((w) => <Row key={w} label={w} value="Withheld — full report" muted />)}
+          </div>
+
+          <div className="flex gap-3 mt-8 flex-wrap">
+            <button onClick={() => navigate(`/unlock/${scan.id}`)} data-testid="unlock-report-button" className="btn" style={{ minWidth: 250 }}>
+              Unlock the full report — {price}
+            </button>
+            <button onClick={() => navigate(`/scan/${scan.id}`)} className="btn-outline">Add a better frame</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-6 md:px-10 py-9"><Disclaimer /></div>
+    </div>
+  );
+}
+
+function Row({ label, value, muted }) {
+  return (
+    <div className="flex justify-between gap-4 py-3.5" style={{ borderBottom: `1px solid ${ink(0.15)}`, color: muted ? ink(0.45) : "#241F1A" }}>
+      <span className="font-mono text-[10px] uppercase tracking-[0.1em]" style={muted ? { color: "inherit" } : { color: ink(0.55) }}>{label}</span>
+      <span className={muted ? "font-mono text-[10px] uppercase tracking-[0.1em]" : "text-[15px]"}>{value || "—"}</span>
+    </div>
+  );
+}
+
+function FullReport({ scan, r, brandName }) {
+  const photoUrl = (slot) => {
+    const p = (scan.photos || []).find((p) => p.slot === slot);
+    return p ? `${API}/files/${p.file_id}` : null;
+  };
+  const plates = [
+    { slot: "dial", caption: "Plate 1 — dial" },
+    { slot: "caseback", caption: "Plate 2 — case back" },
+    { slot: "movement", caption: "Plate 3 — movement" },
+  ];
+  const summary = r.attribute_summary || { matched: 0, unresolved: 0, contradicted: 0 };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-4 flex-wrap px-6 md:px-10 py-3.5 font-mono text-[11px] uppercase tracking-[0.1em]" style={{ borderBottom: "2px solid #241F1A" }}>
+        <span>RefCheck — report {specimenNo(scan.id)}</span>
+        <span style={{ color: ink(0.5) }}>Issued {formatDate(scan.created_at)} · v1</span>
+        <button onClick={() => window.print()} className="text-[#B8420E] hover:text-[#8F3309]">Print</button>
+      </div>
+
+      <div className="px-6 md:px-10 py-11" style={{ borderBottom: "2px solid #241F1A" }}>
+        <div className="grid gap-10 items-end" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#B8420E]">Documented identification</div>
+            <h1 className="font-serif font-normal mt-4" style={{ fontSize: 52, lineHeight: 1.04 }}>
+              {brandName} {r.family}<br />{r.case_reference ? `Ref. ${r.case_reference}` : ""}
+            </h1>
+            <div className="mt-4 font-mono text-[13px] leading-[1.7]" style={{ color: ink(0.7) }}>
+              {[r.calibre && `Calibre ${r.calibre}`, r.serial_range && `Serial ${r.serial_range}`, r.estimated_period].filter(Boolean).join(" · ")}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-baseline justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: ink(0.55) }}>Overall confidence</span>
+              <span className="font-serif text-[48px] leading-none text-[#B8420E]" data-testid="confidence-value">{r.confidence_percentage}%</span>
+            </div>
+            <div className="mt-3"><ConfidenceBar value={r.confidence_percentage} height={16} /></div>
+            <div className="mt-3 font-mono text-[12px] leading-[1.6]" style={{ color: ink(0.62) }}>
+              {summary.matched} attributes matched · {summary.unresolved} unresolved · {summary.contradicted} contradicted
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", borderBottom: "2px solid #241F1A" }}>
+        {plates.map((p, i) => (
+          <div key={p.slot} style={{ borderRight: i < plates.length - 1 ? `1px solid ${ink(0.2)}` : "none" }}>
+            <div className="relative" style={{ aspectRatio: "4/3", background: "#9C958A" }}>
+              {photoUrl(p.slot) && <img src={photoUrl(p.slot)} alt="" className="w-full h-full object-cover" style={{ filter: "grayscale(1)" }} />}
+            </div>
+            <div className="px-6 py-3.5 font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: ink(0.6) }}>{p.caption}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-6 md:px-10 pt-11 pb-2">
+        <div className="font-mono text-[11px] uppercase tracking-[0.14em]" style={{ color: ink(0.55) }}>Section 01 — Matched attributes</div>
+      </div>
+      <div className="px-6 md:px-10 pt-5 overflow-x-auto" data-testid="full-report">
+        <table className="w-full" style={{ borderCollapse: "collapse", minWidth: 640 }}>
+          <thead>
+            <tr style={{ borderTop: "2px solid #241F1A", borderBottom: "2px solid #241F1A" }}>
+              {["Attribute", "Finding", "Source", "Match"].map((h) => (
+                <th key={h} className="text-left font-mono text-[10px] uppercase tracking-[0.12em] py-3 px-4 first:pl-0" style={{ color: ink(0.6) }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {(r.matched_attributes || []).map((m, i) => {
+              const unresolved = /unresolved|contradicted/i.test(m.match || "");
+              return (
+                <tr key={i} style={{ borderBottom: `1px solid ${ink(0.15)}`, color: unresolved ? ink(0.7) : "inherit" }}>
+                  <td className="py-3.5 pr-4 pl-0 text-[15px]">{m.attribute}</td>
+                  <td className="py-3.5 px-4 text-[15px]">{m.finding}</td>
+                  <td className="py-3.5 px-4 font-mono text-[12px]" style={{ color: ink(0.65) }}>{m.source}</td>
+                  <td className="py-3.5 pl-4 font-mono text-[12px]" style={{ color: unresolved ? ink(0.6) : "#B8420E" }}>{m.match}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid mt-11" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", borderTop: "2px solid #241F1A" }}>
+        <Section title="Section 02 — Reading" text={r.reading} border />
+        <Section title="Section 03 — Unresolved" text={r.unresolved_note || "Nothing significant is unresolved."} border />
+        <Section title="Section 04 — Scope" text={`An identification against verified ${brandName} reference data, on the frames supplied. Not a valuation, and not an authentication certificate. Reference data as catalogued ${new Date().toLocaleDateString(undefined, { month: "2-digit", year: "numeric" })}.`} />
+      </div>
+
+      <div className="flex gap-3 flex-wrap px-6 md:px-10 py-9" style={{ borderTop: "2px solid #241F1A" }}>
+        <a href="/scan" className="btn-ink" style={{ minWidth: 220, display: "inline-flex", alignItems: "center" }}>Identify another watch</a>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, text, border }) {
+  return (
+    <div className="px-6 md:px-10 py-9" style={{ borderRight: border ? `1px solid ${ink(0.2)}` : "none" }}>
+      <div className="font-mono text-[11px] uppercase tracking-[0.14em]" style={{ color: ink(0.55) }}>{title}</div>
+      <p className="mt-4 m-0" style={{ fontSize: 16, lineHeight: 1.6, color: ink(0.85) }}>{text}</p>
     </div>
   );
 }

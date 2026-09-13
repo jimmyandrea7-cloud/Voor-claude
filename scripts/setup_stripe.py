@@ -9,10 +9,10 @@ stripe.api_key = os.environ["STRIPE_SECRET_KEY"]
 CATALOG = [
     {
         "emergent_product_id": "report_unlock",
-        "name": "RefCheck Full Appraisal Report",
+        "name": "RefCheck Full Documented Report",
         "tax_code": "txcd_10000000",
         "prices": [
-            {"lookup_key": "report_unlock_single", "amount": 999, "currency": "usd"},
+            {"lookup_key": "report_unlock_single", "amount": 499, "currency": "eur"},
         ],
     },
 ]

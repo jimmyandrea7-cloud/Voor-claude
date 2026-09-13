@@ -8,7 +8,7 @@ export default function Privacy() {
       <div className="max-w-3xl mx-auto px-6 py-14">
         <span className="eyebrow">Legal</span>
         <h1 className="mt-4 font-serif text-4xl text-[#241F1A]">Privacy Policy</h1>
-        <p className="mt-3 text-[13px] text-[#9C8F7A]">Last updated: 12 September 2026</p>
+        <p className="mt-3 text-[13px] text-[#746A56]">Last updated: 12 September 2026</p>
 
         <div className="mt-10 space-y-8 text-[14px] text-[#6B5F4F] leading-relaxed">
           <section>

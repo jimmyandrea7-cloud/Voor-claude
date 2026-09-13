@@ -33,13 +33,13 @@ export default function Dashboard() {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-[#241F1A] animate-spin" /></div>
         ) : scans.length === 0 ? (
-          <div className="card rounded-[4px] p-14 text-center" data-testid="empty-collection">
+          <div className="card p-14 text-center" data-testid="empty-collection">
             <h3 className="font-serif text-3xl text-[#241F1A]">Nothing here yet</h3>
             <p className="mt-3 text-[14px] text-[#6B5F4F]">Bring in your first watch to begin the collection.</p>
             <button onClick={() => navigate("/scan")} className="btn mt-7">Begin identification</button>
           </div>
         ) : (
-          <div className="border border-[#E2D9C6] rounded-[4px] overflow-hidden bg-[#FFFCF5]">
+          <div className="border border-[#E2D9C6] overflow-hidden bg-[#FFFCF5]">
             {scans.map((s, i) => {
               const conf = s.result?.confidence_percentage ?? s.confidence_score ?? null;
               const analyzed = s.status === "analyzed";
@@ -57,8 +57,8 @@ export default function Dashboard() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-serif text-xl text-[#241F1A] truncate">{s.result?.likely_model_family || "Awaiting analysis"}</h3>
-                      <p className="text-[12px] text-[#9C8F7A] mt-0.5">{new Date(s.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</p>
+                      <h3 className="font-serif text-xl text-[#241F1A] truncate">{[s.result?.maker, s.result?.family].filter(Boolean).join(" ") || "Awaiting analysis"}</h3>
+                      <p className="text-[12px] text-[#746A56] mt-0.5">{new Date(s.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</p>
                     </div>
                     <span className="eyebrow shrink-0">{analyzed ? (s.paid ? "Unlocked" : "Locked") : "Draft"}</span>
                   </Link>
