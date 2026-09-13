@@ -1,11 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import api, { API } from "../lib/api";
-import Layout from "../components/Layout";
 import { toast } from "sonner";
-import { Loader2, Check, X } from "lucide-react";
-
-const ink = (a) => `rgba(36,31,26,${a})`;
+import { Loader2, Check } from "lucide-react";
 
 const PHOTO_SLOTS = [
   { id: "dial", label: "01 — Dial, square on", required: true },
@@ -88,144 +85,114 @@ export default function ScanWizard() {
     }
   };
 
-  const removePhoto = async (slot) => {
-    const next = { ...photos };
-    delete next[slot];
-    setPhotos(next);
-    const arr = Object.entries(next).map(([s, v]) => ({ slot: s, file_id: v.file_id, storage_path: "" }));
-    await api.put(`/scans/${scanId}/photos`, { photos: arr });
-  };
-
   const requiredDone = PHOTO_SLOTS.filter((s) => s.required).every((s) => photos[s.id]);
 
-  const runAnalysis = async () => {
+  const runAnalysis = async (e) => {
+    e.preventDefault();
     if (!requiredDone) { toast.error("Please add the three required photographs first."); return; }
     setAnalyzing(true);
     try {
       await api.put(`/scans/${scanId}/description`, { notes });
       await api.post(`/scans/${scanId}/analyze`);
       navigate(`/report/${scanId}`);
-    } catch (e) {
-      toast.error(e?.response?.data?.detail || "Analysis failed. Please try again.");
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Analysis failed. Please try again.");
       setAnalyzing(false);
     }
   };
 
-  if (loadingScan) return <Layout><div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin" /></div></Layout>;
+  if (loadingScan) return <div style={{ display: "flex", justifyContent: "center", padding: "96px 0" }}><Loader2 className="w-6 h-6 animate-spin" /></div>;
 
   if (analyzing) {
     return (
-      <Layout>
-        <div className="max-w-md mx-auto px-6 py-24">
-          <div className="w-10 h-10 rounded-full border-2 rc-spin-slow" style={{ borderColor: ink(0.2), borderTopColor: "#241F1A" }} />
-          <h2 className="mt-7 font-serif text-3xl">Under examination</h2>
-          <div className="mt-7 space-y-3">
-            {STAGES.map((s, i) => (
-              <div key={s} data-testid={`analysis-stage-${i}`} className="flex items-center gap-3 text-[13px]" style={{ color: i <= stageIdx ? "#241F1A" : ink(0.4) }}>
-                {i < stageIdx ? <Check className="w-4 h-4" /> : i === stageIdx ? <Loader2 className="w-4 h-4 animate-spin" /> : <div className="w-4 h-4 rounded-full border" style={{ borderColor: ink(0.3) }} />}
-                {s}
-              </div>
-            ))}
-          </div>
-          <p className="mt-9 font-mono text-xs" style={{ color: ink(0.5) }}>This can take up to a minute. Please keep this page open.</p>
+      <div style={{ maxWidth: 420, margin: "0 auto", padding: "96px 24px" }}>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", border: "2px solid rgba(36,31,26,.2)", borderTopColor: "var(--ink)" }} className="rc-spin-slow" />
+        <h2 className="h-screen" style={{ marginTop: 28, fontSize: 32 }}>Under examination</h2>
+        <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
+          {STAGES.map((s, i) => (
+            <div key={s} className="body" style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13, color: i <= stageIdx ? "var(--ink)" : "var(--ink-45)" }}>
+              {i < stageIdx ? <Check className="w-4 h-4" /> : i === stageIdx ? <Loader2 className="w-4 h-4 animate-spin" /> : <div style={{ width: 16, height: 16, borderRadius: "50%", border: "1px solid rgba(36,31,26,.3)" }} />}
+              {s}
+            </div>
+          ))}
         </div>
-      </Layout>
+        <p className="mono-note" style={{ marginTop: 36 }}>This can take up to a minute. Please keep this page open.</p>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="flex items-center justify-between gap-4 flex-wrap px-6 md:px-10 py-3.5 font-mono text-[11px] uppercase tracking-[0.1em]" style={{ borderBottom: "2px solid #241F1A" }}>
-        <span>RefCheck — new specimen</span>
-        <span style={{ color: ink(0.5) }}>Step 01 of 03 · Photograph</span>
-        <span style={{ color: ink(0.5) }}>{scanId ? `No. ${scanId.slice(0, 8)}` : "No. pending"}</span>
-      </div>
+    <>
+      <header className="bar" style={{ borderBottom: "var(--rule-strong)" }}>
+        <span className="label">RefCheck — new specimen</span>
+        <span className="label muted">Step 01 of 03 · Photograph</span>
+        <span className="label muted">{scanId ? `No. ${scanId.slice(0, 8)}` : "No. pending"}</span>
+      </header>
 
-      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))" }}>
-        <div className="px-6 md:px-10 py-11" style={{ borderRight: "2px solid #241F1A" }}>
-          <h1 className="font-serif font-normal m-0" style={{ fontSize: 40, lineHeight: 1.08, maxWidth: "22ch" }}>Four frames. Flat light, no flash.</h1>
-          <p className="mt-4" style={{ maxWidth: "52ch", fontSize: 16, lineHeight: 1.55, color: ink(0.8) }}>
-            The dial and case back carry most of the evidence. The movement frame is optional, and raises confidence the most.
-          </p>
+      <section className="cols">
+        <div className="divider-r" style={{ padding: "44px 40px" }}>
+          <h1 className="h-screen" style={{ fontSize: 40, lineHeight: 1.08, maxWidth: "22ch" }}>Four frames. Flat light, no flash.</h1>
+          <p className="body" style={{ marginTop: 16, maxWidth: "52ch" }}>The dial and case back carry most of the evidence. The movement frame is optional, and raises confidence the most.</p>
 
-          <div className="grid gap-[2px] mt-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", background: "#241F1A", padding: 2, opacity: scanId ? 1 : 0.4, pointerEvents: scanId ? "auto" : "none" }}>
+          <div className="frame-grid" style={{ marginTop: 32, opacity: scanId ? 1 : 0.4, pointerEvents: scanId ? "auto" : "none" }}>
             {PHOTO_SLOTS.map((slot) => {
               const has = photos[slot.id];
               return (
-                <div key={slot.id} className="relative" style={{ background: "#9C958A", aspectRatio: "1/1" }} data-testid={`photo-slot-${slot.id}`}>
+                <label key={slot.id} className="photo photo-1x1" style={{ display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} data-testid={`photo-slot-${slot.id}`}>
+                  <input ref={(el) => (fileRefs.current[slot.id] = el)} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => handleFile(slot.id, e.target.files[0])} data-testid={`file-input-${slot.id}`} />
                   {has ? (
-                    <>
-                      <img src={has.preview || `${API}/files/${has.file_id}`} alt="" className="w-full h-full object-cover" />
-                      <button onClick={() => removePhoto(slot.id)} data-testid={`remove-photo-${slot.id}`} className="absolute top-2 right-2" style={{ background: "rgba(36,31,26,.75)", padding: 4 }}>
-                        <X className="w-3.5 h-3.5" style={{ color: "#F3EEE3" }} />
-                      </button>
-                    </>
+                    <img src={has.preview || `${API}/files/${has.file_id}`} alt="" />
+                  ) : uploading === slot.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" style={{ color: "var(--parchment)" }} />
                   ) : (
-                    <button
-                      onClick={() => fileRefs.current[slot.id]?.click()}
-                      disabled={uploading === slot.id}
-                      data-testid={`upload-btn-${slot.id}`}
-                      className="absolute inset-0 flex flex-col items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.08em] text-center px-2"
-                      style={{ color: "#F3EEE3" }}
-                    >
-                      {uploading === slot.id ? <Loader2 className="w-4 h-4 animate-spin" /> : slot.label}
-                    </button>
+                    <span className="label label-sm" style={{ color: "var(--parchment)" }}>{slot.label}</span>
                   )}
-                  <input ref={(el) => (fileRefs.current[slot.id] = el)} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => handleFile(slot.id, e.target.files[0])} data-testid={`file-input-${slot.id}`} />
-                </div>
+                </label>
               );
             })}
           </div>
-          <div className="mt-4 font-mono text-[12px] leading-[1.5]" style={{ color: ink(0.6) }}>
-            Drag a photograph onto a frame, or click it to browse. JPEG, PNG or WEBP.
-          </div>
+          <p className="mono-note" style={{ marginTop: 18 }}>Drag a photograph onto a frame, or click it to browse. JPEG, PNG or WEBP.</p>
         </div>
 
-        <div className="px-6 md:px-10 py-11">
-          <div className="font-mono text-[11px] uppercase tracking-[0.12em]" style={{ color: ink(0.55) }}>Maker</div>
-          <div className="mt-4" style={{ borderTop: `1px solid ${ink(0.25)}` }}>
-            {brands.map((b) => {
-              const selected = brandId === b.id;
-              return (
-                <div
-                  key={b.id}
-                  onClick={() => pickBrand(b)}
-                  data-testid={`maker-row-${b.name.toLowerCase()}`}
-                  className="flex items-baseline justify-between gap-3 py-4"
-                  style={{ borderBottom: `1px solid ${ink(0.15)}`, cursor: b.active && !scanId ? "pointer" : "default", opacity: !b.active ? 0.45 : 1 }}
-                >
-                  <span className="font-serif text-[22px]">{b.name}</span>
-                  {b.active ? (
-                    <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#B8420E]">{selected ? "Selected" : (scanId ? "" : "Select")}</span>
-                  ) : (
-                    <span className="font-mono uppercase tracking-[0.1em]" style={{ fontSize: 9, border: "1px solid #241F1A", padding: "4px 6px" }}>{b.coming_soon_label || "Not yet available"}</span>
-                  )}
-                </div>
-              );
-            })}
+        <div style={{ padding: "44px 40px" }}>
+          <div className="label label-sm muted">Maker</div>
+          <div style={{ marginTop: 16, borderTop: "var(--rule-25)" }}>
+            {brands.map((b) => (
+              <div
+                key={b.id}
+                className={`row${!b.active ? " is-unavailable" : ""}`}
+                style={{ alignItems: "baseline", opacity: !b.active ? 0.45 : 1, cursor: b.active && !scanId ? "pointer" : "default" }}
+                onClick={() => pickBrand(b)}
+                data-testid={`maker-row-${b.name.toLowerCase()}`}
+              >
+                <span className="h-step">{b.name}</span>
+                {b.active
+                  ? <span className="label accent">{brandId === b.id ? "Selected" : "Select"}</span>
+                  : <span className="tag tag-pending">{b.coming_soon_label || "Not yet available"}</span>}
+              </div>
+            ))}
           </div>
-          <div className="mt-3.5 font-mono text-[12px] leading-[1.5]" style={{ color: ink(0.6) }}>
-            Choose the maker printed on the dial. If it isn't listed as available, we can't cross-check it yet.
-          </div>
+          <p className="mono-note" style={{ marginTop: 14 }}>Choose the maker printed on the dial. If it isn't listed as available, we can't cross-check it yet.</p>
 
-          <div className="mt-9 font-mono text-[11px] uppercase tracking-[0.12em]" style={{ color: ink(0.55) }}>Anything you already know</div>
-          <input
-            data-testid="desc-notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Serial number, inscription, family papers…"
-            className="field mt-3"
-            disabled={!scanId}
-          />
-
-          <button onClick={runAnalysis} disabled={!scanId || !requiredDone} data-testid="run-analysis-btn" className="btn w-full mt-8" style={{ justifyContent: "flex-start" }}>
-            Run the cross-check.
-          </button>
-          <div className="mt-3.5 font-mono text-[12px] leading-[1.5]" style={{ color: ink(0.6) }}>
-            The preliminary result is free. Nothing is charged at this step.
-          </div>
+          <form onSubmit={runAnalysis}>
+            <div className="label label-sm muted" style={{ marginTop: 36 }}>Anything you already know</div>
+            <input
+              className="input"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Serial number, inscription, family papers…"
+              style={{ marginTop: 12 }}
+              disabled={!scanId}
+              data-testid="desc-notes"
+            />
+            <button className="btn btn-primary btn-block" type="submit" style={{ marginTop: 32 }} disabled={!scanId || !requiredDone} data-testid="run-analysis-btn">
+              Run the cross-check.
+            </button>
+          </form>
+          <p className="mono-note" style={{ marginTop: 14 }}>The preliminary result is free. Nothing is charged at this step.</p>
         </div>
-      </div>
-    </Layout>
+      </section>
+    </>
   );
 }

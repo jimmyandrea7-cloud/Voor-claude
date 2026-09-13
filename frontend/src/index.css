@@ -169,3 +169,193 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 @layer base {
   * { border-color: rgba(36,31,26,.2); }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   Below this line: production/refcheck.css from the Claude Design handoff,
+   ported verbatim (values and selectors unchanged) per the handoff README's
+   instruction. This is the authoritative stylesheet for the ported screens
+   (landing, photograph, preliminary — more as they're ported). Kept
+   alongside the rules above rather than replacing them, since the two
+   systems don't conflict in practice (shared tokens, compatible values) and
+   several pages not yet ported (Dashboard, Admin, Unlock, etc.) still rely
+   on the rules above.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* RefCheck — production stylesheet.
+   Port these tokens and classes into your codebase as-is (or convert the
+   component blocks to your framework's components; keep the values). */
+
+/* ─── Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --ink: #241F1A;
+  --parchment: #F3EEE3;
+  --rust: #B8420E;
+  --rust-pressed: #8F3309;
+  --photo-ground: #9C958A;
+
+  --ink-82: rgba(36,31,26,.82);
+  --ink-80: rgba(36,31,26,.80);
+  --ink-66: rgba(36,31,26,.66);
+  --ink-62: rgba(36,31,26,.62);
+  --ink-55: rgba(36,31,26,.55);
+  --ink-50: rgba(36,31,26,.50);
+  --ink-45: rgba(36,31,26,.45);
+  --rule-strong: 2px solid var(--ink);
+  --rule-25: 1px solid rgba(36,31,26,.25);
+  --rule-20: 1px solid rgba(36,31,26,.20);
+  --rule-15: 1px solid rgba(36,31,26,.15);
+  --tick-empty: rgba(36,31,26,.14);
+
+  --serif: 'Newsreader', Georgia, serif;
+  --sans: 'Schibsted Grotesk', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --pad-x: 40px;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────── */
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; margin: 0; }
+p { margin: 0; text-wrap: pretty; }
+img { display: block; max-width: 100%; }
+
+/* ─── Type roles ─────────────────────────────────────────────────────── */
+.h-hero    { font-size: 58px; line-height: 1.03; letter-spacing: -.015em; max-width: 15ch; }
+.h-poster  { font-size: 56px; line-height: 1;    letter-spacing: -.02em;  max-width: 22ch; font-weight: 300; }
+.h-section { font-size: 38px; line-height: 1.1;  max-width: 24ch; }
+.h-screen  { font-size: 44px; line-height: 1.06; }
+.h-card    { font-size: 26px; line-height: 1.2; }
+.h-step    { font-size: 22px; line-height: 1.2; }
+.h-faq     { font-size: 24px; line-height: 1.2; }
+.figure-xl { font-family: var(--serif); font-size: 64px; line-height: 1; }
+.figure-lg { font-family: var(--serif); font-size: 48px; line-height: 1; color: var(--rust); }
+.figure-md { font-family: var(--serif); font-size: 34px; line-height: 1; color: var(--rust); }
+
+.lead { font-size: 17px; line-height: 1.55; color: var(--ink-82); max-width: 46ch; }
+.body { font-size: 16px; line-height: 1.55; color: var(--ink-80); }
+.small { font-size: 13px; line-height: 1.5; color: var(--ink-66); }
+
+/* Mono label — every uppercase micro-label on the page */
+.label {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+.label-sm { font-size: 10px; letter-spacing: .12em; }
+.label-kicker { font-size: 11px; letter-spacing: .14em; }
+.mono-note { font: 400 12px/1.5 var(--mono); color: var(--ink-62); }
+.muted { color: var(--ink-50); }
+.accent { color: var(--rust); }
+
+/* ─── Structure ──────────────────────────────────────────────────────── */
+.rule { height: 2px; background: var(--ink); }
+.bar {                                  /* header / meta bars */
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap; padding: 14px var(--pad-x);
+}
+.section { padding: 52px var(--pad-x); }
+.cols {                                  /* any auto-collapsing column set */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+}
+.cols-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.cols-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.divider-r { border-right: var(--rule-strong); }
+.cell { padding: 26px var(--pad-x); border-right: var(--rule-20); }
+.cell:last-child { border-right: none; }
+
+/* ─── Buttons — labels are flush left, corners are square ────────────── */
+.btn {
+  display: inline-block; font: 500 14px var(--sans);
+  padding: 15px 22px; text-align: left; border: none; cursor: pointer;
+  border-radius: 0; transition: none;
+}
+.btn-primary   { background: var(--rust); color: var(--parchment); min-width: 230px; }
+.btn-primary:hover { background: var(--rust-pressed); }
+.btn-ink       { background: var(--ink); color: var(--parchment); }
+.btn-ink:hover { background: var(--rust); }
+/* 2px border + 13px padding matches the solid button's height exactly */
+.btn-outline   { background: transparent; color: var(--ink); border: 2px solid var(--ink); padding: 13px 22px; }
+.btn-outline:hover { background: var(--ink); color: var(--parchment); }
+.btn-block     { width: 100%; }
+.btn-link {
+  background: none; border: none; padding: 0 0 3px; cursor: pointer;
+  font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink); border-bottom: 1px solid var(--ink);
+}
+.btn-link:hover { color: var(--rust); border-color: var(--rust); }
+/* on the rust closing band */
+.band .btn-primary { background: var(--parchment); color: var(--ink); }
+.band .btn-primary:hover { background: var(--ink); color: var(--parchment); }
+.band .btn-outline { color: var(--parchment); border-color: var(--parchment); }
+.band .btn-outline:hover { background: rgba(243,238,227,.16); color: var(--parchment); }
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ─── Inputs ─────────────────────────────────────────────────────────── */
+.input {
+  width: 100%; font: 400 15px var(--sans); color: var(--ink);
+  background: transparent; border: none; border-bottom: 2px solid var(--ink);
+  padding: 11px 0; border-radius: 0;
+}
+.input::placeholder { color: var(--ink-50); }
+
+/* ─── Tags ───────────────────────────────────────────────────────────── */
+.tag {
+  font: 500 9px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  padding: 5px 7px; white-space: nowrap;
+}
+.tag-available { background: var(--rust); color: var(--parchment); }
+.tag-pending { border: 1px solid var(--ink); padding: 4px 6px; }
+.is-unavailable { opacity: .55; }
+
+/* ─── Rows (label / value lists) ─────────────────────────────────────── */
+.rows { border-top: var(--rule-strong); }
+.row {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 15px 0; border-bottom: var(--rule-15);
+}
+.row-withheld { color: var(--ink-45); }
+.list-row { padding: 14px 0; border-bottom: var(--rule-15); font-size: 15px; }
+.list-row:last-child { border-bottom: none; }
+
+/* ─── Photographs — always grayscale on the neutral ground ───────────── */
+.photo { position: relative; min-width: 0; background: var(--photo-ground); overflow: hidden; }
+.photo > img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.05); }
+.photo-1x1 { aspect-ratio: 1 / 1; }
+.photo-4x3 { aspect-ratio: 4 / 3; }
+/* grid tracks holding photos MUST use minmax(0,1fr) or they overflow */
+.photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: rgba(36,31,26,.25); }
+.frame-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2px; padding: 2px; background: var(--ink); }
+
+/* ─── Confidence ─────────────────────────────────────────────────────── */
+.conf-head { display: flex; align-items: baseline; justify-content: space-between; }
+.conf-ticks { display: flex; gap: 3px; margin-top: 12px; }
+.conf-ticks span { flex: 1; height: 14px; background: var(--tick-empty); }
+.conf-ticks span.on { background: var(--rust); }
+.conf-bar { height: 14px; border: 1px solid rgba(36,31,26,.3); display: flex; margin-top: 12px; }
+.conf-bar > i { background: var(--rust); }
+
+/* ─── Table ──────────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; min-width: 640px; }
+.table thead tr { border-top: var(--rule-strong); border-bottom: var(--rule-strong); }
+.table th {
+  text-align: left; padding: 12px 16px; font: 500 10px var(--mono);
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-66);
+}
+.table td { padding: 14px 16px; font-size: 15px; border-bottom: var(--rule-15); }
+.table th:first-child, .table td:first-child { padding-left: 0; }
+.table th:last-child, .table td:last-child { padding-right: 0; }
+.table .match { font: 500 12px var(--mono); color: var(--rust); }
+.table tr.unresolved td { color: var(--ink-66); }
+.table tr.unresolved .match { color: var(--ink-62); }
+
+/* ─── Closing band & price box ───────────────────────────────────────── */
+.band { background: var(--rust); color: var(--parchment); padding: 56px var(--pad-x); }
+.price-box { border: var(--rule-strong); padding: 30px; }
+
+/* ─── FAQ ────────────────────────────────────────────────────────────── */
+.faq-item {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 40px; padding: 26px 0; border-top: var(--rule-25);
+}
+.faq-item:last-child { border-bottom: var(--rule-25); }
