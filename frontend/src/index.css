@@ -76,7 +76,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
   cursor: pointer;
   transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
-.btn:hover { background: var(--rust-pressed); }
+.btn:hover { background: var(--rust-pressed); color: var(--parchment); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn-outline {
@@ -93,7 +93,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
   border: none;
   padding: 15px 22px;
 }
-.btn-ink:hover { background: var(--rust); }
+.btn-ink:hover { background: var(--rust); color: var(--parchment); }
 
 .btn-sm { padding: 11px 16px; font-size: 12px; }
 
@@ -103,7 +103,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
   background: transparent;
   border: none;
   border-bottom: 2px solid var(--ink);
-  padding: 11px 0;
+  /* top/bottom only, as longhand — a shorthand `padding` here would come after
+     @tailwind utilities in the stylesheet and silently zero out a horizontal
+     padding utility like pl-9 applied alongside this class (e.g. for an icon) */
+  padding-top: 11px;
+  padding-bottom: 11px;
   font-family: 'Schibsted Grotesk', sans-serif;
   font-size: 15px;
   color: var(--ink);
